@@ -4,25 +4,32 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-type View = 'login' | 'forgot' | 'forgot-sent'
+type View = 'login' | 'signup' | 'signup-done' | 'forgot' | 'forgot-sent'
+
+const inputCls =
+  'w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent'
 
 export default function LoginPage() {
   const router = useRouter()
-  const [view,     setView]     = useState<View>('login')
-  const [email,    setEmail]    = useState('')
-  const [password, setPassword] = useState('')
-  const [loading,  setLoading]  = useState(false)
-  const [error,    setError]    = useState('')
+  const [view,      setView]      = useState<View>('login')
+  const [email,     setEmail]     = useState('')
+  const [password,  setPassword]  = useState('')
+  const [fullName,  setFullName]  = useState('')
+  const [loading,   setLoading]   = useState(false)
+  const [error,     setError]     = useState('')
 
-  // ── Sign in with email + password ──────────────────────────────────────────
+  function switchView(v: View) {
+    setView(v)
+    setError('')
+  }
+
+  // ── Sign in ────────────────────────────────────────────────────────────────
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
-
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithPassword({ email, password })
-
     if (error) {
       setError(error.message)
       setLoading(false)
@@ -32,23 +39,51 @@ export default function LoginPage() {
     }
   }
 
-  // ── Send password reset email ───────────────────────────────────────────────
-  // The redirect URL embeds next=/reset-password so the auth callback
-  // knows to send the user to the password reset page, not /calculator.
+  // ── Sign up ────────────────────────────────────────────────────────────────
+  async function handleSignUp(e: React.FormEvent) {
+    e.preventDefault()
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters.')
+      return
+    }
+    setLoading(true)
+    setError('')
+    const supabase = createClient()
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { full_name: fullName },
+        emailRedirectTo: `${window.location.origin}/calculator`,
+      },
+    })
+
+    if (error) {
+      setError(error.message)
+      setLoading(false)
+      return
+    }
+
+    // If email confirmation is disabled in Supabase, the session is live immediately
+    if (data.session) {
+      router.push('/calculator')
+      router.refresh()
+    } else {
+      // Email confirmation is enabled — show the "check your email" screen
+      setView('signup-done')
+      setLoading(false)
+    }
+  }
+
+  // ── Forgot password ────────────────────────────────────────────────────────
   async function handleForgot(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
-
     const supabase = createClient()
-    const origin   = window.location.origin
-
-    // With implicit flow, Supabase appends #access_token=xxx&type=recovery
-    // directly to this URL — no callback/PKCE exchange needed.
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${origin}/reset-password`,
+      redirectTo: `${window.location.origin}/reset-password`,
     })
-
     if (error) {
       setError(error.message)
       setLoading(false)
@@ -58,7 +93,7 @@ export default function LoginPage() {
     }
   }
 
-  // ── Shared email input ─────────────────────────────────────────────────────
+  // ── Shared fields ──────────────────────────────────────────────────────────
   const emailField = (
     <div>
       <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
@@ -72,7 +107,25 @@ export default function LoginPage() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="you@yourcompany.com"
-        className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+        className={inputCls}
+      />
+    </div>
+  )
+
+  const passwordField = (autoComplete: string, label = 'Password') => (
+    <div>
+      <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+        {label}
+      </label>
+      <input
+        id="password"
+        type="password"
+        required
+        autoComplete={autoComplete}
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder="••••••••"
+        className={inputCls}
       />
     </div>
   )
@@ -89,60 +142,140 @@ export default function LoginPage() {
 
         <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
 
+          {/* ── Tab switcher (login / signup) ──────────────────────────── */}
+          {(view === 'login' || view === 'signup') && (
+            <div className="flex rounded-lg bg-gray-100 p-1 mb-6">
+              <button
+                type="button"
+                onClick={() => switchView('login')}
+                className={`flex-1 rounded-md py-1.5 text-sm font-medium transition-colors ${
+                  view === 'login'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Sign in
+              </button>
+              <button
+                type="button"
+                onClick={() => switchView('signup')}
+                className={`flex-1 rounded-md py-1.5 text-sm font-medium transition-colors ${
+                  view === 'signup'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Create account
+              </button>
+            </div>
+          )}
+
           {/* ── Sign in ──────────────────────────────────────────────────── */}
           {view === 'login' && (
-            <>
-              <h2 className="text-lg font-semibold text-gray-900 mb-1">Sign in</h2>
-              <p className="text-sm text-gray-500 mb-6">Enter your credentials to continue.</p>
-
-              <form onSubmit={handleSignIn} className="space-y-4">
-                {emailField}
-
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label htmlFor="password" className="text-sm font-medium text-gray-700">
-                      Password
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => { setView('forgot'); setError('') }}
-                      className="text-xs text-indigo-600 hover:text-indigo-800"
-                    >
-                      Forgot password?
-                    </button>
-                  </div>
-                  <input
-                    id="password"
-                    type="password"
-                    required
-                    autoComplete="current-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  />
+            <form onSubmit={handleSignIn} className="space-y-4">
+              {emailField}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label htmlFor="password" className="text-sm font-medium text-gray-700">
+                    Password
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => switchView('forgot')}
+                    className="text-xs text-indigo-600 hover:text-indigo-800"
+                  >
+                    Forgot password?
+                  </button>
                 </div>
+                <input
+                  id="password"
+                  type="password"
+                  required
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className={inputCls}
+                />
+              </div>
 
-                {error && (
-                  <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
-                )}
+              {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
 
-                <button
-                  type="submit"
-                  disabled={loading || !email || !password}
-                  className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-indigo-300 disabled:cursor-not-allowed transition-colors"
-                >
-                  {loading ? 'Signing in...' : 'Sign in'}
-                </button>
-              </form>
-            </>
+              <button
+                type="submit"
+                disabled={loading || !email || !password}
+                className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed transition-colors"
+              >
+                {loading ? 'Signing in...' : 'Sign in'}
+              </button>
+            </form>
+          )}
+
+          {/* ── Create account ────────────────────────────────────────────── */}
+          {view === 'signup' && (
+            <form onSubmit={handleSignUp} className="space-y-4">
+              <div>
+                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
+                  Full name
+                </label>
+                <input
+                  id="fullName"
+                  type="text"
+                  autoComplete="name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="e.g. Alex Johnson"
+                  className={inputCls}
+                />
+              </div>
+              {emailField}
+              {passwordField('new-password', 'Password (min. 8 characters)')}
+
+              {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
+
+              <button
+                type="submit"
+                disabled={loading || !email || !password}
+                className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed transition-colors"
+              >
+                {loading ? 'Creating account...' : 'Create account'}
+              </button>
+
+              <p className="text-xs text-center text-gray-400">
+                New accounts are created as <span className="font-medium text-gray-500">Seller</span> by default.
+                Contact your admin to get elevated access.
+              </p>
+            </form>
+          )}
+
+          {/* ── Sign-up confirmation (email verify enabled) ────────────── */}
+          {view === 'signup-done' && (
+            <div className="text-center py-4">
+              <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 mb-4">
+                <svg className="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h2 className="text-lg font-semibold text-gray-900 mb-2">Confirm your email</h2>
+              <p className="text-sm text-gray-500">
+                We sent a confirmation link to{' '}
+                <span className="font-medium text-gray-700">{email}</span>.
+                Click it to activate your account.
+              </p>
+              <button
+                onClick={() => switchView('login')}
+                className="mt-4 text-sm text-indigo-600 hover:text-indigo-800"
+              >
+                Back to sign in
+              </button>
+            </div>
           )}
 
           {/* ── Forgot password ───────────────────────────────────────────── */}
           {view === 'forgot' && (
             <>
               <button
-                onClick={() => { setView('login'); setError('') }}
+                onClick={() => switchView('login')}
                 className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4"
               >
                 ← Back to sign in
@@ -151,18 +284,13 @@ export default function LoginPage() {
               <p className="text-sm text-gray-500 mb-6">
                 Enter your email and we&apos;ll send you a reset link.
               </p>
-
               <form onSubmit={handleForgot} className="space-y-4">
                 {emailField}
-
-                {error && (
-                  <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
-                )}
-
+                {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
                 <button
                   type="submit"
                   disabled={loading || !email}
-                  className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-indigo-300 disabled:cursor-not-allowed transition-colors"
+                  className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed transition-colors"
                 >
                   {loading ? 'Sending...' : 'Send reset link'}
                 </button>
@@ -185,7 +313,7 @@ export default function LoginPage() {
                 Click it to set a new password.
               </p>
               <button
-                onClick={() => { setView('login'); setError('') }}
+                onClick={() => switchView('login')}
                 className="mt-4 text-sm text-indigo-600 hover:text-indigo-800"
               >
                 Back to sign in
