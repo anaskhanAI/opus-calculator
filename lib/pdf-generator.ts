@@ -62,19 +62,43 @@ function buildScopeItems(data: PdfQuoteData): ScopeItem[] {
       g.dbLibrary   + g.dbModification   + g.dbNew
     if (uc > 0)  items.push({ label: 'AI Automation Use Cases', value: String(uc) })
     if (int > 0) items.push({ label: 'System Integrations',      value: String(int) })
-    items.push({ label: 'Deployment',         value: safe(d.deployment) })
-    items.push({ label: 'Training Package',   value: d.training ? 'Included' : 'Not included' })
+    items.push({ label: 'Deployment',       value: safe(d.deployment) })
+    items.push({ label: 'Training Package', value: d.training ? 'Included' : 'Not included' })
   } else {
     const s   = data.inputs as SimpleInputs
     const uc  = s.tier1UseCases + s.tier2UseCases
     const int = s.standardApiIntegrations + s.customIntegrations
     if (uc > 0)  items.push({ label: 'AI Automation Use Cases', value: String(uc) })
     if (int > 0) items.push({ label: 'System Integrations',      value: String(int) })
-    items.push({ label: 'Deployment',         value: safe(s.deployment) })
-    items.push({ label: 'Training Package',   value: s.training ? 'Included' : 'Not included' })
+    items.push({ label: 'Deployment',       value: safe(s.deployment) })
+    items.push({ label: 'Training Package', value: s.training ? 'Included' : 'Not included' })
   }
 
   return items
+}
+
+// ─── LAYOUT HELPERS ─────────────────────────────────────────────────────────
+
+function rule(
+  doc: InstanceType<Awaited<typeof import('jspdf')>['jsPDF']>,
+  x: number, y: number, w: number,
+  color: [number, number, number],
+  weight = 0.3
+) {
+  doc.setDrawColor(...color)
+  doc.setLineWidth(weight)
+  doc.line(x, y, x + w, y)
+}
+
+function sectionLabel(
+  doc: InstanceType<Awaited<typeof import('jspdf')>['jsPDF']>,
+  text: string, x: number, y: number,
+  muted: [number, number, number]
+) {
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(7)
+  doc.setTextColor(...muted)
+  doc.text(text, x, y)
 }
 
 // ─── PDF ────────────────────────────────────────────────────────────────────
@@ -84,51 +108,46 @@ export async function generateQuotePDF(data: PdfQuoteData): Promise<void> {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
 
   const pageW = 210
-  const mg    = 20           // margin
-  const cW    = pageW - mg * 2   // 170 mm content width
-  let   y     = 0
+  const mg    = 20
+  const cW    = pageW - mg * 2   // 170 mm
 
-  // Palette — clean blacks/greys, brand-consistent
   const INK   = [17,  24,  39]  as [number, number, number]
   const BODY  = [55,  65,  81]  as [number, number, number]
   const MUTED = [107, 114, 128] as [number, number, number]
   const PALE  = [156, 163, 175] as [number, number, number]
   const RULE  = [229, 231, 235] as [number, number, number]
-  const FAINT = [248, 249, 250] as [number, number, number]  // table header / total bg
+  const FAINT = [248, 249, 250] as [number, number, number]
 
-  // ── TOP ACCENT STRIPE (2 mm branded edge) ─────────────────────────────────
+  let y = 0
+
+  // ── TOP STRIPE ────────────────────────────────────────────────────────────
   doc.setFillColor(...INK)
   doc.rect(0, 0, pageW, 2, 'F')
 
   // ── LOGO ──────────────────────────────────────────────────────────────────
   const logoDataUrl = await loadLogo()
-  y = 18
+  y = 15
 
   if (logoDataUrl) {
     const imgProps = doc.getImageProperties(logoDataUrl)
-    const logoH    = 9
+    const logoH    = 8
     const logoW    = (imgProps.width / imgProps.height) * logoH
     doc.addImage(logoDataUrl, 'PNG', mg, y - logoH, logoW, logoH)
   } else {
     doc.setFont('helvetica', 'bold')
-    doc.setFontSize(15)
+    doc.setFontSize(14)
     doc.setTextColor(...INK)
     doc.text('OPUS', mg, y)
   }
 
-  // Date — right of logo
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(8)
   doc.setTextColor(...MUTED)
-  doc.text(formatDate(data.createdAt), pageW - mg, y - 2, { align: 'right' })
+  doc.text(formatDate(data.createdAt), pageW - mg, y - 1, { align: 'right' })
 
-  y += 6
-
-  // ── RULE ──────────────────────────────────────────────────────────────────
-  doc.setDrawColor(...RULE)
-  doc.setLineWidth(0.4)
-  doc.line(mg, y, pageW - mg, y)
-  y += 8
+  y += 4
+  rule(doc, mg, y, cW, RULE, 0.4)
+  y += 7
 
   // ── TITLE BLOCK ───────────────────────────────────────────────────────────
   doc.setFont('helvetica', 'normal')
@@ -137,33 +156,25 @@ export async function generateQuotePDF(data: PdfQuoteData): Promise<void> {
   doc.text('DELIVERY PRICING QUOTE', mg, y)
   y += 7
 
-  // Client name — large and bold
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(24)
+  doc.setFontSize(22)
   doc.setTextColor(...INK)
-  const clientLabel = (doc.splitTextToSize(safe(data.clientName), cW) as string[])[0]
-  doc.text(clientLabel, mg, y)
-  y += 9
+  doc.text((doc.splitTextToSize(safe(data.clientName), cW) as string[])[0], mg, y)
+  y += 8
 
-  // Project name
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(11)
   doc.setTextColor(...BODY)
   doc.text(safe(data.projectName), mg, y)
-  y += 12
-
-  // ── RULE ──────────────────────────────────────────────────────────────────
-  doc.setDrawColor(...RULE)
-  doc.setLineWidth(0.3)
-  doc.line(mg, y, pageW - mg, y)
   y += 9
 
-  // ── SCOPE OVERVIEW ───────────────────────────────────────────────────────
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(7)
-  doc.setTextColor(...MUTED)
-  doc.text('SCOPE OVERVIEW', mg, y)
+  // ── RULE ──────────────────────────────────────────────────────────────────
+  rule(doc, mg, y, cW, RULE)
   y += 7
+
+  // ── SCOPE OVERVIEW ───────────────────────────────────────────────────────
+  sectionLabel(doc, 'SCOPE OVERVIEW', mg, y, MUTED)
+  y += 6
 
   const scopeItems = buildScopeItems(data)
   const halfW      = cW / 2
@@ -177,68 +188,59 @@ export async function generateQuotePDF(data: PdfQuoteData): Promise<void> {
       ? (doc.splitTextToSize(right.value, halfW - 8) as string[])
       : []
 
-    // Label
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(6.5)
     doc.setTextColor(...MUTED)
     doc.text(left.label.toUpperCase(), mg, y)
     if (right) doc.text(right.label.toUpperCase(), mg + halfW, y)
 
-    // Value
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(9.5)
     doc.setTextColor(...INK)
-    doc.text(leftLines,  mg,          y + 5)
+    doc.text(leftLines, mg, y + 5)
     if (right) doc.text(rightLines, mg + halfW, y + 5)
 
     const maxLines = Math.max(leftLines.length, rightLines.length)
-    y += 5 + maxLines * 5.5 + 5
+    y += 5 + maxLines * 5 + 4
   }
 
-  // Notes (if any)
+  // Notes
   if (data.notes) {
+    y += 1
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(6.5)
     doc.setTextColor(...MUTED)
     doc.text('NOTES', mg, y)
     y += 4
-
     doc.setFont('helvetica', 'italic')
     doc.setFontSize(8.5)
     doc.setTextColor(...BODY)
     const noteLines = doc.splitTextToSize(safe(data.notes), cW) as string[]
     doc.text(noteLines, mg, y)
-    y += noteLines.length * 4.5 + 4
+    y += noteLines.length * 4.5 + 2
   }
 
-  y += 3
-
-  // ── RULE ──────────────────────────────────────────────────────────────────
-  doc.setDrawColor(...RULE)
-  doc.setLineWidth(0.3)
-  doc.line(mg, y, pageW - mg, y)
-  y += 9
+  y += 2
+  rule(doc, mg, y, cW, RULE)
+  y += 7
 
   // ── INVESTMENT SUMMARY ───────────────────────────────────────────────────
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(7)
-  doc.setTextColor(...MUTED)
-  doc.text('INVESTMENT SUMMARY', mg, y)
-  y += 6
+  sectionLabel(doc, 'INVESTMENT SUMMARY', mg, y, MUTED)
+  y += 5
 
-  const PX = pageW - mg        // price right-align x
-  const DX = pageW - mg - 28   // duration right-align x
+  const PX = pageW - mg
+  const DX = pageW - mg - 28
 
-  // Table header
+  // Header row
   doc.setFillColor(...FAINT)
-  doc.rect(mg, y - 1, cW, 8, 'F')
+  doc.rect(mg, y - 1, cW, 7.5, 'F')
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(6.5)
   doc.setTextColor(...MUTED)
   doc.text('SERVICE',    mg + 3, y + 4)
   doc.text('DURATION',   DX,     y + 4, { align: 'right' })
   doc.text('INVESTMENT', PX,     y + 4, { align: 'right' })
-  y += 10
+  y += 9
 
   const rows: { label: string; item: typeof data.outputs.coreImplementation }[] = [
     { label: 'Core Implementation',        item: data.outputs.coreImplementation },
@@ -271,90 +273,72 @@ export async function generateQuotePDF(data: PdfQuoteData): Promise<void> {
     doc.setDrawColor(...RULE)
     doc.setLineWidth(0.2)
     doc.line(mg, y + 3.5, pageW - mg, y + 3.5)
-    y += 11
+    y += 10
   })
 
-  y += 3
+  y += 2
 
-  // ── TOTAL INVESTMENT (subtle light card — not a black box) ────────────────
-  // Thin dark rule on top signals importance without a heavy fill
+  // ── TOTAL INVESTMENT ──────────────────────────────────────────────────────
+  // Single dark rule on top — no heavy box
   doc.setDrawColor(...INK)
-  doc.setLineWidth(1)
+  doc.setLineWidth(0.8)
   doc.line(mg, y, pageW - mg, y)
   y += 1
 
   doc.setFillColor(...FAINT)
-  doc.rect(mg, y, cW, 18, 'F')
+  doc.rect(mg, y, cW, 16, 'F')
 
-  // Label
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(7)
   doc.setTextColor(...MUTED)
-  doc.text('TOTAL INVESTMENT', mg + 4, y + 8)
+  doc.text('TOTAL INVESTMENT', mg + 4, y + 7)
 
-  // Price — large, bold, right-aligned
   const totalPrice = data.outputs.projectTotal.listPrice
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(20)
+  doc.setFontSize(19)
   doc.setTextColor(...INK)
   doc.text(
     totalPrice === 'On Demand' ? 'On Request' : formatPrice(totalPrice),
-    PX, y + 10, { align: 'right' }
+    PX, y + 9, { align: 'right' }
   )
 
-  // Weeks sub-line
   const totalWks = data.outputs.projectTotal.weeks
   if (typeof totalWks === 'number' && totalWks > 0) {
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(7.5)
     doc.setTextColor(...PALE)
-    doc.text(`${formatWeeks(totalWks)} weeks estimated delivery`, PX, y + 16, { align: 'right' })
+    doc.text(`${formatWeeks(totalWks)} weeks estimated delivery`, PX, y + 14.5, { align: 'right' })
   }
 
-  // Light rule underneath
-  doc.setDrawColor(...RULE)
-  doc.setLineWidth(0.3)
-  doc.line(mg, y + 19, pageW - mg, y + 19)
-
-  y += 26
+  rule(doc, mg, y + 17, cW, RULE)
+  y += 22
 
   // ── NEXT STEPS ────────────────────────────────────────────────────────────
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(7)
-  doc.setTextColor(...MUTED)
-  doc.text('NEXT STEPS', mg, y)
+  sectionLabel(doc, 'NEXT STEPS', mg, y, MUTED)
   y += 6
-
-  const steps = doc.splitTextToSize(
-    'Following acceptance of this proposal, the Opus team will prepare a detailed Statement of Work ' +
-    'outlining project milestones, deliverables, and success criteria. Onboarding typically commences ' +
-    'within 2–3 weeks of a signed agreement.\n\n' +
-    'To move forward or for any questions regarding this proposal, please contact your Opus account manager.',
-    cW
-  ) as string[]
 
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(9)
   doc.setTextColor(...BODY)
-  doc.text(steps, mg, y)
+  const nextText = doc.splitTextToSize(
+    'The Opus team will follow up with a Statement of Work covering milestones and deliverables. ' +
+    'Contact your account manager to move forward.',
+    cW
+  ) as string[]
+  doc.text(nextText, mg, y)
 
   // ── FOOTER ────────────────────────────────────────────────────────────────
   const footerY = 284
-  doc.setDrawColor(...RULE)
-  doc.setLineWidth(0.3)
-  doc.line(mg, footerY, pageW - mg, footerY)
+  rule(doc, mg, footerY, cW, RULE)
 
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(6.5)
   doc.setTextColor(...PALE)
   doc.text(
-    'All figures are indicative list prices, subject to final scope confirmation and formal agreement.',
+    'All figures are indicative and subject to final scope confirmation and formal agreement.',
     mg, footerY + 5
   )
-  doc.text(
-    `Valid for 30 days from date of issue  ·  opus.ai`,
-    pageW - mg, footerY + 5, { align: 'right' }
-  )
+  doc.text('opus.ai', pageW - mg, footerY + 5, { align: 'right' })
 
   // ── SAVE ──────────────────────────────────────────────────────────────────
   const slug = data.clientName.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '')
