@@ -1,3 +1,4 @@
+import { createServiceClient } from '@/lib/supabase/server'
 import AdminDashboardClient from './AdminDashboardClient'
 import type { Quote } from '@/lib/types'
 
@@ -24,27 +25,26 @@ function mapRow(row: Record<string, unknown>): Quote {
 }
 
 export default async function AdminPage() {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_URL}/api/quotes?admin=true`,
-    { cache: 'no-store' }
-  )
+  // Query directly with the service-role client — bypasses RLS so ALL sellers'
+  // quotes are returned. The admin layout already ensures only admins reach here.
+  const supabase = createServiceClient()
+  const { data: rows, error } = await supabase
+    .from('quotes')
+    .select('*')
+    .order('created_at', { ascending: false })
 
-  let quotes: Quote[] = []
-  if (response.ok) {
-    const data = await response.json()
-    quotes = (data.quotes ?? []).map(mapRow)
+  if (error) {
+    console.error('Admin page — failed to fetch quotes:', error.message)
   }
+
+  const quotes: Quote[] = (rows ?? []).map(mapRow)
 
   return (
     <div className="mx-auto max-w-screen-xl px-4 sm:px-6 py-5">
-      <div className="mb-5 flex items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-0.5">
-            <span className="text-xs font-medium text-indigo-600 uppercase tracking-wide">Admin</span>
-          </div>
-          <h1 className="text-lg font-bold text-gray-900">Quote Dashboard</h1>
-          <p className="text-xs text-gray-500 mt-0.5">All quotes across all sellers</p>
-        </div>
+      <div className="mb-5">
+        <span className="text-xs font-medium text-indigo-600 uppercase tracking-wide">Admin</span>
+        <h1 className="text-lg font-bold text-gray-900 mt-0.5">Quote Dashboard</h1>
+        <p className="text-xs text-gray-500">All quotes across all sellers</p>
       </div>
 
       <AdminDashboardClient initialQuotes={quotes} />
