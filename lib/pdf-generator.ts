@@ -1,10 +1,11 @@
 /**
  * Client-side PDF generation using jsPDF.
- * Called only in the browser — never import this in Server Components or API routes.
+ * Produces a clean, client-facing delivery pricing quote.
+ * Only import in browser context — never in Server Components or API routes.
  */
 
 import type { CalculatorMode, DetailedInputs, SimpleInputs, CalculatorOutputs } from './types'
-import { formatPrice, formatWeeks, formatHours, formatFte } from './pricing-engine'
+import { formatPrice, formatWeeks } from './pricing-engine'
 
 export interface PdfQuoteData {
   quoteRef:    string
@@ -19,260 +20,349 @@ export interface PdfQuoteData {
   notes?:      string
 }
 
+interface ScopeItem { label: string; value: string }
+
+// ─── HELPERS ────────────────────────────────────────────────────────────────
+
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
+  return new Date(dateStr).toLocaleDateString('en-US', {
+    day: '2-digit', month: 'long', year: 'numeric',
   })
 }
 
-function safePdfStr(val: unknown): string {
+function safe(val: unknown): string {
   return val == null ? '' : String(val)
 }
 
-export async function generateQuotePDF(data: PdfQuoteData): Promise<void> {
-  // Dynamic import so jsPDF is only loaded client-side
-  const { jsPDF } = await import('jspdf')
-
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
-
-  const pageW  = 210
-  const margin = 18
-  const col2   = 110
-  let y = margin
-
-  // ─── COLOR PALETTE ────────────────────────────────────────────────────────
-  const INDIGO  = [63,  81, 181]  as [number, number, number]
-  const DARK    = [17,  24,  39]  as [number, number, number]
-  const MID     = [75,  85,  99]  as [number, number, number]
-  const LIGHT   = [156, 163, 175] as [number, number, number]
-  const BGLIGHT = [249, 250, 251] as [number, number, number]
-  const LINE    = [229, 231, 235] as [number, number, number]
-
-  // ─── HEADER BANNER ────────────────────────────────────────────────────────
-  doc.setFillColor(...INDIGO)
-  doc.rect(0, 0, pageW, 28, 'F')
-
-  doc.setTextColor(255, 255, 255)
-  doc.setFontSize(18)
-  doc.setFont('helvetica', 'bold')
-  doc.text('OPUS', margin, 13)
-
-  doc.setFontSize(10)
-  doc.setFont('helvetica', 'normal')
-  doc.text('Delivery Pricing Quote', margin, 20)
-
-  doc.setFontSize(9)
-  doc.text(data.quoteRef, pageW - margin, 13, { align: 'right' })
-  doc.text(formatDate(data.createdAt), pageW - margin, 20, { align: 'right' })
-
-  y = 36
-
-  // ─── CLIENT / PROJECT SECTION ─────────────────────────────────────────────
-  doc.setFillColor(...BGLIGHT)
-  doc.roundedRect(margin, y, pageW - margin * 2, 28, 2, 2, 'F')
-
-  doc.setTextColor(...DARK)
-  doc.setFontSize(8)
-  doc.setFont('helvetica', 'bold')
-  doc.setTextColor(...LIGHT)
-  doc.text('CLIENT', margin + 4, y + 7)
-  doc.text('PROJECT', col2, y + 7)
-  doc.text('PREPARED BY', margin + 4, y + 18)
-  doc.text('CALCULATOR MODE', col2, y + 18)
-
-  doc.setTextColor(...DARK)
-  doc.setFontSize(10)
-  doc.setFont('helvetica', 'bold')
-  doc.text(safePdfStr(data.clientName),  margin + 4, y + 13)
-  doc.text(safePdfStr(data.projectName), col2,       y + 13)
-
-  doc.setFontSize(9)
-  doc.setFont('helvetica', 'normal')
-  doc.setTextColor(...MID)
-  doc.text(`${safePdfStr(data.sellerName)} · ${safePdfStr(data.sellerEmail)}`, margin + 4, y + 24)
-  doc.text(
-    data.mode === 'detailed' ? 'Detailed Mode' : 'Simple Mode',
-    col2,
-    y + 24
-  )
-
-  y += 34
-
-  // ─── PARAMETERS SECTION ───────────────────────────────────────────────────
-  doc.setTextColor(...DARK)
-  doc.setFontSize(10)
-  doc.setFont('helvetica', 'bold')
-  doc.text('Calculator Parameters', margin, y)
-  y += 6
-
-  doc.setDrawColor(...LINE)
-  doc.setLineWidth(0.3)
-  doc.line(margin, y, pageW - margin, y)
-  y += 5
-
-  doc.setFontSize(8)
-  doc.setFont('helvetica', 'normal')
-
-  function paramRow(label: string, value: string, col: number = margin) {
-    doc.setTextColor(...LIGHT)
-    doc.text(label, col, y)
-    doc.setTextColor(...DARK)
-    doc.setFont('helvetica', 'bold')
-    doc.text(value, col, y + 4)
-    doc.setFont('helvetica', 'normal')
+/** Fetch the Opus logo and convert it to a base64 data URL for jsPDF. */
+async function loadLogo(): Promise<string | null> {
+  try {
+    const res  = await fetch('/OpusLogo.png')
+    const blob = await res.blob()
+    return await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload  = () => resolve(reader.result as string)
+      reader.onerror = reject
+      reader.readAsDataURL(blob)
+    })
+  } catch {
+    return null
   }
+}
+
+/**
+ * Translate raw calculator inputs into client-friendly scope labels.
+ * No internal terminology (Tier 1/2, REST/SOAP, FTE, auth methods, etc.).
+ */
+function buildScopeItems(data: PdfQuoteData): ScopeItem[] {
+  const items: ScopeItem[] = []
 
   if (data.mode === 'detailed') {
-    const d = data.inputs as DetailedInputs
-    const g = d.integrations
+    const d    = data.inputs as DetailedInputs
+    const g    = d.integrations
+    const useCases  = d.tier1UseCases + d.tier2UseCases
     const totalInts =
       g.restLibrary + g.restModification + g.restNew +
       g.soapLibrary + g.soapModification + g.soapNew +
       g.dbLibrary   + g.dbModification   + g.dbNew
 
-    paramRow('Tier 1 — Linear Automation',   `${d.tier1UseCases} use cases`)
-    paramRow('Tier 2 — Agentic AI',           `${d.tier2UseCases} use cases`, col2)
-    y += 10
-    paramRow('Total Integrations',            `${totalInts}`)
-    paramRow('Deployment',                    safePdfStr(d.deployment), col2)
-    y += 10
-    paramRow('Training',                      d.training ? 'Yes — 1 week, $20,000' : 'No')
-    paramRow('Complexity Factor',             `${Math.round(d.complexityFactor * 100)}%`, col2)
-    y += 10
-
-    // Integration grid summary
-    doc.setTextColor(...LIGHT)
-    doc.text('Integration breakdown (Type × Status):', margin, y)
-    y += 5
-    doc.setTextColor(...MID)
-    const gridLines = [
-      `REST/JSON — Library: ${g.restLibrary}  ·  Modification: ${g.restModification}  ·  New: ${g.restNew}  (Auth: ${g.restAuth})`,
-      `SOAP/XML  — Library: ${g.soapLibrary}  ·  Modification: ${g.soapModification}  ·  New: ${g.soapNew}  (Auth: ${g.soapAuth})`,
-      `DB/Prop   — Library: ${g.dbLibrary}  ·  Modification: ${g.dbModification}  ·  New: ${g.dbNew}  (Auth: ${g.dbAuth})`,
-    ]
-    gridLines.forEach((line) => {
-      doc.text(line, margin, y)
-      y += 4.5
-    })
-    y += 2
+    if (useCases > 0)  items.push({ label: 'AI Automation Use Cases',  value: String(useCases) })
+    if (totalInts > 0) items.push({ label: 'System Integrations',       value: String(totalInts) })
+    items.push({ label: 'Deployment Environment', value: safe(d.deployment) })
+    items.push({ label: 'Training & Enablement',  value: d.training ? 'Included' : 'Not included' })
+    if (d.complexityFactor > 0)
+      items.push({ label: 'Scope Complexity',  value: `${Math.round(d.complexityFactor * 100)}% adjustment` })
   } else {
     const s = data.inputs as SimpleInputs
-    paramRow('Tier 1 — Linear Automation',   `${s.tier1UseCases} use cases`)
-    paramRow('Tier 2 — Agentic AI',           `${s.tier2UseCases} use cases`, col2)
-    y += 10
-    paramRow('Standard API Integrations',     `${s.standardApiIntegrations}`)
-    paramRow('Custom High-Code Integrations', `${s.customIntegrations}`, col2)
-    y += 10
-    paramRow('Deployment',                    safePdfStr(s.deployment))
-    paramRow('Training',                      s.training ? 'Yes — 1 week, $20,000' : 'No', col2)
-    y += 10
-    paramRow('Complexity Factor',             `${Math.round(s.complexityFactor * 100)}%`)
-    y += 8
+    const useCases  = s.tier1UseCases + s.tier2UseCases
+    const totalInts = s.standardApiIntegrations + s.customIntegrations
+
+    if (useCases > 0)  items.push({ label: 'AI Automation Use Cases',  value: String(useCases) })
+    if (totalInts > 0) items.push({ label: 'System Integrations',       value: String(totalInts) })
+    items.push({ label: 'Deployment Environment', value: safe(s.deployment) })
+    items.push({ label: 'Training & Enablement',  value: s.training ? 'Included' : 'Not included' })
+    if (s.complexityFactor > 0)
+      items.push({ label: 'Scope Complexity',  value: `${Math.round(s.complexityFactor * 100)}% adjustment` })
   }
 
-  // ─── PRICING TABLE ────────────────────────────────────────────────────────
-  doc.setTextColor(...DARK)
-  doc.setFontSize(10)
-  doc.setFont('helvetica', 'bold')
-  doc.text('Pricing Breakdown', margin, y)
-  y += 6
+  return items
+}
 
-  doc.setDrawColor(...LINE)
+// ─── MAIN EXPORT ────────────────────────────────────────────────────────────
+
+export async function generateQuotePDF(data: PdfQuoteData): Promise<void> {
+  const { jsPDF } = await import('jspdf')
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+
+  const pageW  = 210
+  const margin = 20
+  const cW     = pageW - margin * 2   // 170 mm usable width
+  let   y      = 0
+
+  // ── PALETTE (matches Opus brand: clean black/grey, no indigo) ─────────────
+  const INK    = [17,  24,  39]  as [number, number, number]  // near-black
+  const BODY   = [55,  65,  81]  as [number, number, number]  // dark grey
+  const MUTED  = [107, 114, 128] as [number, number, number]  // mid grey
+  const SUBTLE = [156, 163, 175] as [number, number, number]  // light grey
+  const RULE   = [229, 231, 235] as [number, number, number]  // divider
+  const FILL   = [248, 249, 250] as [number, number, number]  // table header bg
+  const WHITE  = [255, 255, 255] as [number, number, number]
+
+  // ── LOGO ──────────────────────────────────────────────────────────────────
+  const logoDataUrl = await loadLogo()
+  y = 22
+
+  if (logoDataUrl) {
+    // Render at a fixed height; let jsPDF maintain width
+    const imgProps = doc.getImageProperties(logoDataUrl)
+    const logoH    = 10
+    const logoW    = (imgProps.width / imgProps.height) * logoH
+    doc.addImage(logoDataUrl, 'PNG', margin, y - logoH, logoW, logoH)
+  } else {
+    // Text fallback
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(16)
+    doc.setTextColor(...INK)
+    doc.text('OPUS', margin, y)
+  }
+
+  // Quote ref + date — top right
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(8)
+  doc.setTextColor(...MUTED)
+  doc.text(data.quoteRef,            pageW - margin, y - 6, { align: 'right' })
+  doc.text(formatDate(data.createdAt), pageW - margin, y - 1, { align: 'right' })
+
+  y += 5
+
+  // ── RULE ──────────────────────────────────────────────────────────────────
+  doc.setDrawColor(...RULE)
+  doc.setLineWidth(0.5)
   doc.line(margin, y, pageW - margin, y)
-  y += 4
-
-  // Table header
-  const col = {
-    label:  margin,
-    price:  105,
-    weeks:  138,
-    hours:  160,
-    fte:    183,
-  }
-
-  doc.setFillColor(...BGLIGHT)
-  doc.rect(margin, y, pageW - margin * 2, 7, 'F')
-  doc.setFontSize(7.5)
-  doc.setFont('helvetica', 'bold')
-  doc.setTextColor(...LIGHT)
-  doc.text('LINE ITEM',   col.label, y + 5)
-  doc.text('LIST PRICE',  col.price, y + 5, { align: 'right' })
-  doc.text('WEEKS',       col.weeks, y + 5, { align: 'right' })
-  doc.text('HOURS',       col.hours, y + 5, { align: 'right' })
-  doc.text('FTE',         col.fte,   y + 5, { align: 'right' })
   y += 9
 
+  // ── QUOTE TITLE BLOCK ────────────────────────────────────────────────────
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(7.5)
+  doc.setTextColor(...MUTED)
+  doc.text('DELIVERY PRICING QUOTE', margin, y)
+  y += 7
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(22)
+  doc.setTextColor(...INK)
+  // Truncate very long client names to avoid overflow
+  const clientLabel = doc.splitTextToSize(safe(data.clientName), cW)[0] as string
+  doc.text(clientLabel, margin, y)
+  y += 9
+
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(11)
+  doc.setTextColor(...BODY)
+  doc.text(safe(data.projectName), margin, y)
+  y += 6
+
+  doc.setFontSize(8)
+  doc.setTextColor(...MUTED)
+  doc.text(`Prepared by  ${safe(data.sellerName)}  ·  ${safe(data.sellerEmail)}`, margin, y)
+  y += 11
+
+  // ── RULE ──────────────────────────────────────────────────────────────────
+  doc.setDrawColor(...RULE)
+  doc.setLineWidth(0.3)
+  doc.line(margin, y, pageW - margin, y)
+  y += 9
+
+  // ── SCOPE OVERVIEW ───────────────────────────────────────────────────────
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(7.5)
+  doc.setTextColor(...MUTED)
+  doc.text('SCOPE OVERVIEW', margin, y)
+  y += 7
+
+  const scopeItems = buildScopeItems(data)
+  const halfW      = cW / 2
+
+  for (let i = 0; i < scopeItems.length; i += 2) {
+    const left  = scopeItems[i]
+    const right = scopeItems[i + 1]
+
+    // Left item
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(7)
+    doc.setTextColor(...MUTED)
+    doc.text(left.label.toUpperCase(), margin, y)
+
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(9.5)
+    doc.setTextColor(...INK)
+    const leftLines = doc.splitTextToSize(left.value, halfW - 6)
+    doc.text(leftLines, margin, y + 5)
+
+    // Right item (if it exists)
+    if (right) {
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(7)
+      doc.setTextColor(...MUTED)
+      doc.text(right.label.toUpperCase(), margin + halfW, y)
+
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(9.5)
+      doc.setTextColor(...INK)
+      const rightLines = doc.splitTextToSize(right.value, halfW - 6)
+      doc.text(rightLines, margin + halfW, y + 5)
+    }
+
+    // Row height: taller when values wrap
+    const maxLines = Math.max(
+      (leftLines as string[]).length,
+      right ? (doc.splitTextToSize(right.value, halfW - 6) as string[]).length : 0
+    )
+    y += 5 + maxLines * 5 + 3
+  }
+
+  y += 3
+
+  // ── NOTES ─────────────────────────────────────────────────────────────────
+  if (data.notes) {
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(7)
+    doc.setTextColor(...MUTED)
+    doc.text('NOTES', margin, y)
+    y += 4
+
+    doc.setFont('helvetica', 'italic')
+    doc.setFontSize(9)
+    doc.setTextColor(...BODY)
+    const noteLines = doc.splitTextToSize(safe(data.notes), cW) as string[]
+    doc.text(noteLines, margin, y)
+    y += noteLines.length * 4.5 + 5
+  }
+
+  // ── RULE ──────────────────────────────────────────────────────────────────
+  doc.setDrawColor(...RULE)
+  doc.setLineWidth(0.3)
+  doc.line(margin, y, pageW - margin, y)
+  y += 9
+
+  // ── INVESTMENT SUMMARY TABLE ──────────────────────────────────────────────
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(7.5)
+  doc.setTextColor(...MUTED)
+  doc.text('INVESTMENT SUMMARY', margin, y)
+  y += 6
+
+  // Column x-positions (right-aligned)
+  const PRICE_X = pageW - margin          // 190 mm
+  const DUR_X   = pageW - margin - 32     // 158 mm
+
+  // Table header background
+  doc.setFillColor(...FILL)
+  doc.rect(margin, y - 1, cW, 8, 'F')
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(7)
+  doc.setTextColor(...MUTED)
+  doc.text('SERVICE',    margin + 3, y + 4)
+  doc.text('DURATION',   DUR_X,      y + 4, { align: 'right' })
+  doc.text('INVESTMENT', PRICE_X,    y + 4, { align: 'right' })
+  y += 10
+
   const lineItems: { label: string; item: typeof data.outputs.coreImplementation }[] = [
-    { label: 'Core Implementation', item: data.outputs.coreImplementation },
-    { label: 'Integrations',        item: data.outputs.integrations },
-    { label: 'Deployment',          item: data.outputs.deployment },
-    { label: 'Training',            item: data.outputs.training },
-    { label: 'Complexity Factor',   item: data.outputs.complexityFactor },
+    { label: 'Core Implementation',        item: data.outputs.coreImplementation },
+    { label: 'System Integrations',         item: data.outputs.integrations },
+    { label: 'Deployment & Infrastructure', item: data.outputs.deployment },
+    { label: 'Training & Enablement',       item: data.outputs.training },
+    { label: 'Scope Complexity Adjustment', item: data.outputs.complexityFactor },
   ]
 
   lineItems.forEach(({ label, item }) => {
+    // Skip zero-value rows — clients only see what they're paying for
     const isZero = item.listPrice === 0 && item.weeks === 0 && item.hours === 0
+    if (isZero) return
+
+    const priceStr = item.listPrice === 'On Demand' ? 'On Request' : formatPrice(item.listPrice)
+    const wksRaw   = item.weeks
+    const durStr   = wksRaw === 'On Demand'
+      ? 'On Request'
+      : `${formatWeeks(wksRaw)} wk${Number(wksRaw) !== 1 ? 's' : ''}`
+
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(9)
-    if (isZero) { doc.setTextColor(...LIGHT) } else { doc.setTextColor(...DARK) }
-    doc.text(label,                            col.label, y)
-    doc.text(formatPrice(item.listPrice),      col.price, y, { align: 'right' })
-    doc.text(formatWeeks(item.weeks),          col.weeks, y, { align: 'right' })
-    doc.text(formatHours(item.hours),          col.hours, y, { align: 'right' })
-    doc.text(formatFte(item.fte),              col.fte,   y, { align: 'right' })
+    doc.setTextColor(...BODY)
+    doc.text(label, margin + 3, y)
 
-    doc.setDrawColor(...LINE)
+    doc.setTextColor(...MUTED)
+    doc.setFontSize(8.5)
+    doc.text(durStr, DUR_X, y, { align: 'right' })
+
+    doc.setFont('helvetica', 'semibold')
+    doc.setFontSize(9)
+    doc.setTextColor(...INK)
+    doc.text(priceStr, PRICE_X, y, { align: 'right' })
+
+    doc.setDrawColor(...RULE)
     doc.setLineWidth(0.2)
-    doc.line(margin, y + 2, pageW - margin, y + 2)
-    y += 8
+    doc.line(margin, y + 3, pageW - margin, y + 3)
+    y += 10
   })
 
-  // Total row
-  doc.setFillColor(...INDIGO)
-  doc.rect(margin, y - 2, pageW - margin * 2, 9, 'F')
-  doc.setTextColor(255, 255, 255)
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(9.5)
-  doc.text('PROJECT TOTAL',                                 col.label, y + 4)
-  doc.text(formatPrice(data.outputs.projectTotal.listPrice), col.price, y + 4, { align: 'right' })
-  doc.text(formatWeeks(data.outputs.projectTotal.weeks),     col.weeks, y + 4, { align: 'right' })
-  doc.text(formatHours(data.outputs.projectTotal.hours),     col.hours, y + 4, { align: 'right' })
-  y += 14
+  y += 2
 
-  // ─── NOTES ────────────────────────────────────────────────────────────────
-  if (data.notes) {
-    doc.setTextColor(...DARK)
-    doc.setFontSize(9)
-    doc.setFont('helvetica', 'bold')
-    doc.text('Notes', margin, y)
-    y += 5
+  // ── TOTAL INVESTMENT BOX ──────────────────────────────────────────────────
+  const totalIsOnDemand = data.outputs.projectTotal.listPrice === 'On Demand'
+  const totalPriceStr   = totalIsOnDemand ? 'On Request' : formatPrice(data.outputs.projectTotal.listPrice)
+  const totalWeeksNum   = data.outputs.projectTotal.weeks
+
+  doc.setFillColor(...INK)
+  doc.roundedRect(margin, y, cW, 16, 2, 2, 'F')
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(9)
+  doc.setTextColor(...WHITE)
+  doc.text('TOTAL INVESTMENT', margin + 5, y + 7)
+
+  doc.setFontSize(15)
+  doc.text(totalPriceStr, PRICE_X, y + 7, { align: 'right' })
+
+  if (typeof totalWeeksNum === 'number' && totalWeeksNum > 0) {
     doc.setFont('helvetica', 'normal')
-    doc.setTextColor(...MID)
-    const noteLines = doc.splitTextToSize(data.notes, pageW - margin * 2)
-    doc.text(noteLines, margin, y)
-    y += noteLines.length * 5 + 4
+    doc.setFontSize(7.5)
+    doc.setTextColor(...SUBTLE)
+    doc.text(
+      `Estimated delivery: ${formatWeeks(totalWeeksNum)} weeks`,
+      PRICE_X, y + 13, { align: 'right' }
+    )
   }
 
-  // ─── FOOTER ───────────────────────────────────────────────────────────────
-  const footerY = 287
-  doc.setDrawColor(...LINE)
+  y += 22
+
+  // ── TERMS NOTE ────────────────────────────────────────────────────────────
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(7.5)
+  doc.setTextColor(...MUTED)
+  const termsLines = doc.splitTextToSize(
+    'All investment figures are indicative list prices and subject to final scope confirmation. ' +
+    'A detailed Statement of Work will be provided prior to project commencement.',
+    cW
+  ) as string[]
+  doc.text(termsLines, margin, y)
+
+  // ── FOOTER ────────────────────────────────────────────────────────────────
+  const footerY = 283
+  doc.setDrawColor(...RULE)
   doc.setLineWidth(0.3)
   doc.line(margin, footerY, pageW - margin, footerY)
 
-  doc.setFontSize(7)
   doc.setFont('helvetica', 'normal')
-  doc.setTextColor(...LIGHT)
+  doc.setFontSize(7)
+  doc.setTextColor(...SUBTLE)
   doc.text(
-    `This quote was generated by the Opus Pricing Calculator v1.2 on ${formatDate(data.createdAt)}. Quote ID: ${data.quoteRef}`,
-    margin,
-    footerY + 4
+    `Quote Reference: ${data.quoteRef}  ·  Prepared by Opus  ·  Valid for 30 days from ${formatDate(data.createdAt)}`,
+    margin, footerY + 5
   )
-  doc.text('All figures are indicative list prices. Subject to final scope and approval.', margin, footerY + 8)
+  doc.text('opus.ai  ·  Confidential', pageW - margin, footerY + 5, { align: 'right' })
 
-  // ─── SAVE / DOWNLOAD ──────────────────────────────────────────────────────
+  // ── SAVE ──────────────────────────────────────────────────────────────────
   const clientSlug = data.clientName.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '')
-  const filename = `${data.quoteRef}-${clientSlug}.pdf`
-  doc.save(filename)
+  doc.save(`${data.quoteRef}-${clientSlug}.pdf`)
 }
