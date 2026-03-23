@@ -210,6 +210,90 @@ export async function generateQuotePDF(data: PdfQuoteData): Promise<void> {
     y += 5 + maxLines * 5 + 4
   }
 
+  // ── INTEGRATION GRID ──────────────────────────────────────────────────────
+  if (data.mode === 'detailed') {
+    const d = data.inputs as DetailedInputs
+    const g = d.integrations
+
+    y += 2
+    rule(doc, mg, y, cW, RULE, 0.2)
+    y += 6
+
+    sectionLabel(doc, 'INTEGRATIONS', mg, y, MUTED)
+    y += 5
+
+    const statusW = 50
+    const typeW   = (cW - statusW) / 3
+
+    // Header row
+    doc.setFillColor(...FAINT)
+    doc.rect(mg, y - 1, cW, 7.5, 'F')
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(6.5)
+    doc.setTextColor(...MUTED)
+    doc.text('STATUS',           mg + 2,                          y + 3.5)
+    doc.text('REST / JSON',      mg + statusW + typeW * 0.5,      y + 3.5, { align: 'center' })
+    doc.text('SOAP / XML',       mg + statusW + typeW * 1.5,      y + 3.5, { align: 'center' })
+    doc.text('DB / PROPRIETARY', mg + statusW + typeW * 2.5,      y + 3.5, { align: 'center' })
+    y += 9
+
+    const gridRows = [
+      { label: 'Existing Opus Library', rest: g.restLibrary,     soap: g.soapLibrary,     db: g.dbLibrary },
+      { label: 'Modification',          rest: g.restModification, soap: g.soapModification, db: g.dbModification },
+      { label: 'New Integration',        rest: g.restNew,          soap: g.soapNew,          db: g.dbNew },
+    ]
+
+    gridRows.forEach(({ label, rest, soap, db }) => {
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(8.5)
+      doc.setTextColor(...BODY)
+      doc.text(label, mg + 2, y)
+
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(9)
+      doc.setTextColor(...INK)
+      doc.text(String(rest), mg + statusW + typeW * 0.5, y, { align: 'center' })
+      doc.text(String(soap), mg + statusW + typeW * 1.5, y, { align: 'center' })
+      doc.text(String(db),   mg + statusW + typeW * 2.5, y, { align: 'center' })
+
+      rule(doc, mg, y + 3.5, cW, RULE, 0.2)
+      y += 9
+    })
+
+    y += 1
+  } else {
+    const s   = data.inputs as SimpleInputs
+    const int = s.standardApiIntegrations + s.customIntegrations
+
+    if (int > 0) {
+      y += 2
+      rule(doc, mg, y, cW, RULE, 0.2)
+      y += 6
+
+      sectionLabel(doc, 'INTEGRATIONS', mg, y, MUTED)
+      y += 6
+
+      const simpleRows = [
+        { label: 'Standard Modern API',  value: s.standardApiIntegrations },
+        { label: 'Custom High-Code Build', value: s.customIntegrations },
+      ]
+
+      simpleRows.forEach(({ label, value }) => {
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(6.5)
+        doc.setTextColor(...MUTED)
+        doc.text(label.toUpperCase(), mg, y)
+
+        doc.setFont('helvetica', 'bold')
+        doc.setFontSize(9.5)
+        doc.setTextColor(...INK)
+        doc.text(String(value), mg, y + 5)
+
+        y += 13
+      })
+    }
+  }
+
   // ── CLIENT NOTES ──────────────────────────────────────────────────────────
   if (data.notes) {
     y += 1
