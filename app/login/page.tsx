@@ -137,7 +137,7 @@ export default function LoginPage() {
         {/* Brand */}
         <div className="mb-8 text-center">
           <img src="/OpusLogo.png" alt="Opus" className="h-10 w-auto mx-auto mb-4" />
-          <p className="text-sm text-gray-500">Delivery Pricing Calculator</p>
+          <p className="text-sm text-gray-500">Solutions Delivery Pricing Calculator</p>
         </div>
 
         <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
@@ -324,7 +324,7 @@ export default function LoginPage() {
         </div>
 
         <p className="mt-6 text-center text-xs text-gray-400">
-          Opus Pre-Sales · Internal use only
+          Internal use only
         </p>
       </div>
     </div>

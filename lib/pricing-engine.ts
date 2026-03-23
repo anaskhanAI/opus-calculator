@@ -444,7 +444,7 @@ export function formatWeeks(value: number | 'On Demand'): string {
 
 export function formatHours(value: number | 'On Demand'): string {
   if (value === 'On Demand') return 'On Demand'
-  return value % 1 === 0 ? value.toString() : value.toFixed(1)
+  return Math.ceil(value).toString()
 }
 
 export function formatFte(value: number | string): string {

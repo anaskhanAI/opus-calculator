@@ -130,8 +130,7 @@ export default function CalculatorPage() {
       {/* Page header + mode toggle inline */}
       <div className="mb-4 flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-base font-bold text-gray-900">Delivery Pricing Calculator</h1>
-          <p className="text-xs text-gray-400 mt-0.5">v1.2 · Indicative list prices</p>
+          <h1 className="text-base font-bold text-gray-900">Solutions Delivery Pricing Calculator</h1>
         </div>
         <ModeToggle mode={mode} onChange={handleModeChange} />
       </div>
