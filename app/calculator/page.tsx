@@ -88,6 +88,25 @@ export default function CalculatorPage() {
   const canGenerate = clientName.trim().length > 0 && projectName.trim().length > 0
 
   function handleModeChange(newMode: CalculatorMode) {
+    if (newMode === mode) return
+
+    // Carry over the five fields that are identical in both modes so the
+    // seller doesn't have to re-enter them when switching back and forth.
+    const current = mode === 'detailed' ? detailedInputs : simpleInputs
+    const shared = {
+      tier1UseCases:    current.tier1UseCases,
+      tier2UseCases:    current.tier2UseCases,
+      deployment:       current.deployment,
+      training:         current.training,
+      complexityFactor: current.complexityFactor,
+    }
+
+    if (newMode === 'simple') {
+      setSimpleInputs(prev => ({ ...prev, ...shared }))
+    } else {
+      setDetailedInputs(prev => ({ ...prev, ...shared }))
+    }
+
     setMode(newMode)
     setSuccessMsg('')
     setErrorMsg('')

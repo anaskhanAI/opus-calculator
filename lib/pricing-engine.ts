@@ -439,7 +439,7 @@ export function formatPrice(value: number | 'On Demand'): string {
 
 export function formatWeeks(value: number | 'On Demand'): string {
   if (value === 'On Demand') return 'On Demand'
-  return value % 1 === 0 ? value.toString() : value.toFixed(2)
+  return Math.ceil(value).toString()
 }
 
 export function formatHours(value: number | 'On Demand'): string {

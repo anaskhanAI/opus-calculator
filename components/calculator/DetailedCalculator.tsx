@@ -3,19 +3,13 @@
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import Toggle from '@/components/ui/Toggle'
-import type { DetailedInputs, AuthMethod } from '@/lib/types'
+import type { DetailedInputs } from '@/lib/types'
 import { DEPLOYMENT_OPTIONS } from '@/lib/pricing-engine'
 
 interface DetailedCalculatorProps {
   inputs: DetailedInputs
   onChange: (inputs: DetailedInputs) => void
 }
-
-const AUTH_OPTIONS: { value: AuthMethod; label: string }[] = [
-  { value: 'API Key / Basic', label: 'API Key / Basic' },
-  { value: 'OAuth2',          label: 'OAuth2' },
-  { value: 'VPN / mTLS',     label: 'VPN / mTLS' },
-]
 
 const DEPLOYMENT_SELECT_OPTIONS = DEPLOYMENT_OPTIONS.map((d) => ({ value: d, label: d }))
 
@@ -79,7 +73,7 @@ export default function DetailedCalculator({ inputs, onChange }: DetailedCalcula
           `No. of Integrations = ${totalIntegrations}`
         )}
         <p className="text-xs text-gray-500 mb-3">
-          Enter the count of integrations for each Type × Status combination. Auth method is captured for context.
+          Enter the count of integrations for each Type × Status combination.
         </p>
 
         {/* 3×3 grid — matches Excel layout exactly */}
@@ -199,30 +193,6 @@ export default function DetailedCalculator({ inputs, onChange }: DetailedCalcula
           </table>
         </div>
 
-        {/* Auth selectors — captured for audit, not used in formula */}
-        <div className="mt-4 grid grid-cols-3 gap-3">
-          <Select
-            label="REST / JSON Auth"
-            value={grid.restAuth}
-            options={AUTH_OPTIONS}
-            onChange={(e) => updateGrid({ restAuth: e.target.value as AuthMethod })}
-          />
-          <Select
-            label="SOAP / XML Auth"
-            value={grid.soapAuth}
-            options={AUTH_OPTIONS}
-            onChange={(e) => updateGrid({ soapAuth: e.target.value as AuthMethod })}
-          />
-          <Select
-            label="DB / Proprietary Auth"
-            value={grid.dbAuth}
-            options={AUTH_OPTIONS}
-            onChange={(e) => updateGrid({ dbAuth: e.target.value as AuthMethod })}
-          />
-        </div>
-        <p className="text-xs text-gray-400 mt-1">
-          Auth method is stored for audit context — not included in pricing formula.
-        </p>
       </section>
 
       {/* DIMENSION C */}
