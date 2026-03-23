@@ -43,7 +43,7 @@ export default function DetailedCalculator({ inputs, onChange }: DetailedCalcula
       {/* DIMENSION A */}
       <section>
         {sectionHeader(
-          'Dimension A — Use Case Complexity',
+          'Use Case Complexity',
           `No. of Workflows = ${inputs.tier1UseCases + inputs.tier2UseCases}`
         )}
         <div className="grid grid-cols-2 gap-4">
@@ -69,7 +69,7 @@ export default function DetailedCalculator({ inputs, onChange }: DetailedCalcula
       {/* DIMENSION B */}
       <section>
         {sectionHeader(
-          'Dimension B — Integration Strategy',
+          'Integration Strategy',
           `No. of Integrations = ${totalIntegrations}`
         )}
         <p className="text-xs text-gray-500 mb-3">
@@ -197,7 +197,7 @@ export default function DetailedCalculator({ inputs, onChange }: DetailedCalcula
 
       {/* DIMENSION C */}
       <section>
-        {sectionHeader('Dimension C — Deployment')}
+        {sectionHeader('Deployment')}
         <Select
           label="Deployment Type"
           value={inputs.deployment}
@@ -210,7 +210,7 @@ export default function DetailedCalculator({ inputs, onChange }: DetailedCalcula
 
       {/* DIMENSION D */}
       <section>
-        {sectionHeader('Dimension D — Training')}
+        {sectionHeader('Training')}
         <Toggle
           label="Train the Trainer"
           checked={inputs.training}

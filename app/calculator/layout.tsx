@@ -24,9 +24,6 @@ async function NavBar() {
           <div className="flex items-center gap-5">
             <Link href="/calculator" className="flex items-center gap-2.5">
               <img src="/OpusLogo.png" alt="Opus" className="h-6 w-auto" />
-              <span className="text-sm font-semibold text-gray-800 hidden sm:block">
-                Pricing Calculator
-              </span>
             </Link>
             <div className="hidden sm:flex items-center gap-1">
               <Link

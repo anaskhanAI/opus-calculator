@@ -32,7 +32,7 @@ export default function SimpleCalculator({ inputs, onChange }: SimpleCalculatorP
       {/* DIMENSION A */}
       <section>
         {sectionHeader(
-          'Dimension A — Use Case Complexity',
+          'Use Case Complexity',
           `No. of Workflows = ${inputs.tier1UseCases + inputs.tier2UseCases}`
         )}
         <div className="grid grid-cols-2 gap-4">
@@ -58,7 +58,7 @@ export default function SimpleCalculator({ inputs, onChange }: SimpleCalculatorP
       {/* DIMENSION B */}
       <section>
         {sectionHeader(
-          'Dimension B — Integration Strategy',
+          'Integration Strategy',
           `No. of Integrations = ${inputs.standardApiIntegrations + inputs.customIntegrations}`
         )}
         <div className="grid grid-cols-2 gap-4">
@@ -90,7 +90,7 @@ export default function SimpleCalculator({ inputs, onChange }: SimpleCalculatorP
 
       {/* DIMENSION C */}
       <section>
-        {sectionHeader('Dimension C — Deployment')}
+        {sectionHeader('Deployment')}
         <Select
           label="Deployment Type"
           value={inputs.deployment}
@@ -103,7 +103,7 @@ export default function SimpleCalculator({ inputs, onChange }: SimpleCalculatorP
 
       {/* DIMENSION D */}
       <section>
-        {sectionHeader('Dimension D — Training')}
+        {sectionHeader('Training')}
         <Toggle
           label="Train the Trainer"
           checked={inputs.training}

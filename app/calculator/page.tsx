@@ -127,11 +127,8 @@ export default function CalculatorPage() {
 
   return (
     <div className="mx-auto max-w-screen-xl px-4 sm:px-6 py-4">
-      {/* Page header + mode toggle inline */}
-      <div className="mb-4 flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-base font-bold text-gray-900">Solutions Delivery Pricing Calculator</h1>
-        </div>
+      {/* Mode toggle */}
+      <div className="mb-4 flex justify-end">
         <ModeToggle mode={mode} onChange={handleModeChange} />
       </div>
 
