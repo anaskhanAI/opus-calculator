@@ -70,9 +70,6 @@ export default function DetailedCalculator({ inputs, onChange }: DetailedCalcula
           'Integration Strategy',
           `No. of Integrations = ${totalIntegrations}`
         )}
-        <p className="text-xs text-gray-500 mb-3">
-          Enter the count of integrations for each Type × Status combination.
-        </p>
 
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
@@ -211,18 +208,21 @@ export default function DetailedCalculator({ inputs, onChange }: DetailedCalcula
       {/* COMPLEXITY FACTOR */}
       <section>
         {sectionHeader('Complexity Factor')}
-        <Input
-          label=""
-          type="number"
-          min={0}
-          max={100}
-          value={Math.round(inputs.complexityFactor * 100)}
-          onChange={(e) =>
-            update({ complexityFactor: Math.min(1, Math.max(0, Number(e.target.value) / 100)) })
-          }
-          className="max-w-[120px]"
-          placeholder="0"
-        />
+        <div className="flex items-center gap-2">
+          <Input
+            label=""
+            type="number"
+            min={0}
+            max={100}
+            value={Math.round(inputs.complexityFactor * 100)}
+            onChange={(e) =>
+              update({ complexityFactor: Math.min(1, Math.max(0, Number(e.target.value) / 100)) })
+            }
+            className="max-w-[100px]"
+            placeholder="0"
+          />
+          <span className="text-sm text-gray-500 mt-1">%</span>
+        </div>
       </section>
     </div>
   )

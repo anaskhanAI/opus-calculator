@@ -60,10 +60,8 @@ function buildScopeItems(data: PdfQuoteData): ScopeItem[] {
       g.soapLibrary + g.soapModification + g.soapNew +
       g.dbLibrary   + g.dbModification   + g.dbNew
 
-    if (d.tier1UseCases > 0)
-      items.push({ label: 'Linear Automation', value: String(d.tier1UseCases) })
-    if (d.tier2UseCases > 0)
-      items.push({ label: 'Agentic AI Automation', value: String(d.tier2UseCases) })
+    items.push({ label: 'Simple Automation', value: String(d.tier1UseCases) })
+    items.push({ label: 'Agentic AI Automation', value: String(d.tier2UseCases) })
     if (int > 0)
       items.push({ label: 'System Integrations', value: String(int) })
     items.push({ label: 'Deployment', value: safe(d.deployment) })
@@ -73,10 +71,8 @@ function buildScopeItems(data: PdfQuoteData): ScopeItem[] {
     const s   = data.inputs as SimpleInputs
     const int = s.standardApiIntegrations + s.customIntegrations
 
-    if (s.tier1UseCases > 0)
-      items.push({ label: 'Linear Automation', value: String(s.tier1UseCases) })
-    if (s.tier2UseCases > 0)
-      items.push({ label: 'Agentic AI Automation', value: String(s.tier2UseCases) })
+    items.push({ label: 'Simple Automation', value: String(s.tier1UseCases) })
+    items.push({ label: 'Agentic AI Automation', value: String(s.tier2UseCases) })
     if (int > 0)
       items.push({ label: 'System Integrations', value: String(int) })
     items.push({ label: 'Deployment', value: safe(s.deployment) })

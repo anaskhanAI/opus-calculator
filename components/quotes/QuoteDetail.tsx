@@ -33,9 +33,9 @@ function DetailedInputsView({ inputs }: { inputs: DetailedInputs }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <InfoRow label="Tier 1 Use Cases" value={`${inputs.tier1UseCases}`} />
-        <InfoRow label="Tier 2 Use Cases" value={`${inputs.tier2UseCases}`} />
-        <InfoRow label="Training" value={inputs.training ? 'Yes' : 'No'} />
+        <InfoRow label="Simple Automation" value={`${inputs.tier1UseCases}`} />
+        <InfoRow label="Agentic AI Automation" value={`${inputs.tier2UseCases}`} />
+        <InfoRow label="Training" value={inputs.training ? 'Included' : 'Not included'} />
         <InfoRow label="Complexity Factor" value={`${Math.round(inputs.complexityFactor * 100)}%`} />
         <div className="col-span-2 sm:col-span-2">
           <InfoRow label="Deployment" value={inputs.deployment} />
@@ -77,11 +77,6 @@ function DetailedInputsView({ inputs }: { inputs: DetailedInputs }) {
             </tbody>
           </table>
         </div>
-        <div className="mt-2 grid grid-cols-3 gap-2">
-          <InfoRow label="REST Auth" value={g.restAuth} />
-          <InfoRow label="SOAP Auth" value={g.soapAuth} />
-          <InfoRow label="DB Auth"   value={g.dbAuth} />
-        </div>
       </div>
     </div>
   )
@@ -90,11 +85,11 @@ function DetailedInputsView({ inputs }: { inputs: DetailedInputs }) {
 function SimpleInputsView({ inputs }: { inputs: SimpleInputs }) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-      <InfoRow label="Tier 1 Use Cases"           value={`${inputs.tier1UseCases}`} />
-      <InfoRow label="Tier 2 Use Cases"           value={`${inputs.tier2UseCases}`} />
+      <InfoRow label="Simple Automation"          value={`${inputs.tier1UseCases}`} />
+      <InfoRow label="Agentic AI Automation"      value={`${inputs.tier2UseCases}`} />
       <InfoRow label="Standard API Integrations"  value={`${inputs.standardApiIntegrations}`} />
       <InfoRow label="Custom Integrations"        value={`${inputs.customIntegrations}`} />
-      <InfoRow label="Training"                   value={inputs.training ? 'Yes' : 'No'} />
+      <InfoRow label="Training"                   value={inputs.training ? 'Included' : 'Not included'} />
       <InfoRow label="Complexity Factor"          value={`${Math.round(inputs.complexityFactor * 100)}%`} />
       <div className="col-span-2 sm:col-span-3">
         <InfoRow label="Deployment" value={inputs.deployment} />
@@ -117,7 +112,6 @@ export default function QuoteDetail({ quote }: QuoteDetailProps) {
               <Badge color={quote.calculatorMode === 'detailed' ? 'indigo' : 'blue'}>
                 {quote.calculatorMode}
               </Badge>
-              <Badge color="gray">Model {quote.modelVersion}</Badge>
             </div>
             <p className="text-[10px] text-gray-400 mt-1">{formatDate(quote.createdAt)}</p>
           </div>
