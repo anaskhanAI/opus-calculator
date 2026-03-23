@@ -38,6 +38,12 @@ async function NavBar() {
               >
                 My Quotes
               </Link>
+              <Link
+                href="/calculator/pricing-guide"
+                className="px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
+              >
+                Pricing Guide
+              </Link>
               {isAdmin && (
                 <Link
                   href="/admin"
