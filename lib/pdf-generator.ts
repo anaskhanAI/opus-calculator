@@ -313,20 +313,6 @@ export async function generateQuotePDF(data: PdfQuoteData): Promise<void> {
   rule(doc, mg, y + 17, cW, RULE)
   y += 22
 
-  // ── NEXT STEPS ────────────────────────────────────────────────────────────
-  sectionLabel(doc, 'NEXT STEPS', mg, y, MUTED)
-  y += 6
-
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(9)
-  doc.setTextColor(...BODY)
-  const nextText = doc.splitTextToSize(
-    'The Opus team will follow up with a Statement of Work covering milestones and deliverables. ' +
-    'Contact your account manager to move forward.',
-    cW
-  ) as string[]
-  doc.text(nextText, mg, y)
-
   // ── FOOTER ────────────────────────────────────────────────────────────────
   const footerY = 284
   rule(doc, mg, footerY, cW, RULE)
@@ -338,7 +324,6 @@ export async function generateQuotePDF(data: PdfQuoteData): Promise<void> {
     'All figures are indicative and subject to final scope confirmation and formal agreement.',
     mg, footerY + 5
   )
-  doc.text('opus.ai', pageW - mg, footerY + 5, { align: 'right' })
 
   // ── SAVE ──────────────────────────────────────────────────────────────────
   const slug = data.clientName.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '')
