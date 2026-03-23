@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Opus Solutions — Delivery Pricing Guide</title>
+<title>Opus Solutions Delivery - Pricing Guide</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
   :root {
+    color-scheme: light dark;
     --ink: #0d0d0d;
     --paper: #f5f2ec;
     --accent: #c8501a;
@@ -16,10 +17,34 @@
     --mid: #6b6660;
     --rule: #d4cfc8;
     --card: #ffffff;
+    --panel: #ffffff;
+    --surface-soft: rgba(255,255,255,0.72);
+    --surface-muted: #f8f6f1;
+    --text-soft: #3a3733;
+    --sidebar-d: #1a3d1a;
     --tier1: #1a5c8a;
     --tier2: #c8501a;
     --tier3: #7b4fa8;
     --tier4: #2d7a45;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #f5f7fb;
+      --paper: #080b12;
+      --mid: #9aa3b2;
+      --rule: rgba(255,255,255,0.10);
+      --card: #111827;
+      --panel: #0f1724;
+      --surface-soft: rgba(15,23,36,0.88);
+      --surface-muted: #0b1220;
+      --text-soft: #d5deea;
+      --sidebar-d: #0c2515;
+      --tier1: #6bb7ff;
+      --tier2: #ff8d57;
+      --tier3: #c58cff;
+      --tier4: #59d38c;
+    }
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -30,12 +55,13 @@
     color: var(--ink);
     font-size: 15px;
     line-height: 1.65;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   /* ── MASTHEAD ── */
   .masthead {
     background: var(--ink);
-    color: #fff;
+    color: var(--paper);
     padding: 0 48px;
     display: flex;
     align-items: stretch;
@@ -55,14 +81,14 @@
     font-weight: 500;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: rgba(255,255,255,0.45);
+    color: color-mix(in srgb, var(--paper) 45%, transparent);
     margin-bottom: 6px;
   }
   .masthead-title {
     font-family: 'Syne', sans-serif;
     font-size: 30px;
     font-weight: 800;
-    color: #fff;
+    color: var(--paper);
     line-height: 1.1;
   }
   .masthead-title span { color: var(--accent); }
@@ -76,12 +102,12 @@
   }
   .masthead-meta p {
     font-size: 11px;
-    color: rgba(255,255,255,0.4);
+    color: color-mix(in srgb, var(--paper) 40%, transparent);
     letter-spacing: 0.06em;
   }
   .masthead-badge {
     background: var(--accent);
-    color: #fff;
+    color: var(--paper);
     font-family: 'Syne', sans-serif;
     font-size: 10px;
     font-weight: 700;
@@ -101,7 +127,7 @@
     gap: 24px;
   }
   .intro-band p {
-    color: #fff;
+    color: var(--paper);
     font-size: 14px;
     font-weight: 300;
     line-height: 1.6;
@@ -130,7 +156,7 @@
   .dim-card:last-child { border-right: none; }
   .dim-card:hover { background: rgba(200,80,26,0.04); }
   .dim-card.active {
-    background: #fff;
+    background: var(--panel);
     border-bottom: 3px solid var(--accent);
   }
   .dim-letter {
@@ -187,7 +213,7 @@
   }
   .summary-right {
     padding: 40px 48px;
-    background: #fff;
+    background: var(--panel);
   }
 
   .section-eyebrow {
@@ -208,7 +234,7 @@
   }
   .section-body {
     font-size: 14px;
-    color: #3a3733;
+    color: var(--text-soft);
     line-height: 1.7;
   }
 
@@ -222,7 +248,7 @@
   .dim-overview-item {
     border-left: 3px solid;
     padding: 12px 16px;
-    background: #fff;
+    background: var(--panel);
     border-radius: 0 4px 4px 0;
   }
   .dim-overview-item:nth-child(1) { border-color: var(--tier1); }
@@ -321,7 +347,7 @@
   }
   .dim-sidebar {
     background: var(--ink);
-    color: #fff;
+    color: var(--paper);
     padding: 40px 32px;
   }
   .dim-sidebar-letter {
@@ -358,7 +384,7 @@
     color: rgba(255,255,255,0.7);
     line-height: 1.5;
   }
-  .dim-main { padding: 40px 48px; background: #fff; }
+  .dim-main { padding: 40px 48px; background: var(--panel); }
 
   /* Tier cards */
   .tier-grid { display: grid; gap: 12px; }
@@ -372,7 +398,7 @@
     align-items: start;
     transition: box-shadow 0.15s;
   }
-  .tier-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+  .tier-card:hover { box-shadow: 0 4px 16px rgba(255,255,255,0.10); }
   .tier-badge {
     font-family: 'Syne', sans-serif;
     font-size: 11px;
@@ -416,7 +442,7 @@
   }
   .int-matrix th {
     background: var(--ink);
-    color: #fff;
+    color: var(--paper);
     font-family: 'Syne', sans-serif;
     font-size: 10px;
     text-transform: uppercase;
@@ -442,7 +468,7 @@
     margin-bottom: 3px;
   }
   .badge-config { background: #ddf0e4; color: #1a6638; }
-  .badge-mod    { background: #fff0d8; color: #8a4a00; }
+  .badge-mod    { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
   .badge-build  { background: #f0e0d8; color: #8a2800; }
 
   /* Category flow */
@@ -457,7 +483,7 @@
   .cat-row:last-child { border-bottom: none; }
   .cat-number {
     background: var(--ink);
-    color: #fff;
+    color: var(--paper);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -482,7 +508,7 @@
   .cat-deliverables ul { list-style: none; padding: 0; }
   .cat-deliverables ul li {
     font-size: 11.5px;
-    color: #3a3733;
+    color: var(--text-soft);
     padding: 2px 0;
     display: flex;
     gap: 6px;
@@ -498,7 +524,7 @@
   }
   .deploy-table th {
     background: var(--ink);
-    color: #fff;
+    color: var(--paper);
     font-family: 'Syne', sans-serif;
     font-size: 10px;
     text-transform: uppercase;
@@ -541,7 +567,7 @@
   .pricing-card-header {
     padding: 14px 18px;
     background: var(--ink);
-    color: #fff;
+    color: var(--paper);
   }
   .pricing-card-header .pc-title {
     font-family: 'Syne', sans-serif;
@@ -555,14 +581,14 @@
     font-family: 'Syne', sans-serif;
     font-size: 24px;
     font-weight: 800;
-    color: #fff;
+    color: var(--paper);
   }
   .pricing-card-header .pc-price small {
     font-size: 12px;
     opacity: 0.6;
     font-weight: 400;
   }
-  .pricing-card-body { padding: 14px 18px; background: #fff; font-size: 12.5px; color: var(--mid); line-height: 1.55; }
+  .pricing-card-body { padding: 14px 18px; background: var(--panel); font-size: 12.5px; color: var(--mid); line-height: 1.55; }
 
   /* Milestone bar */
   .milestone-bar {
@@ -626,11 +652,11 @@
     font-family: 'Syne', sans-serif;
     font-size: 16px;
     font-weight: 800;
-    color: #fff;
+    color: var(--paper);
     margin-bottom: 4px;
   }
   .training-header .t-desc { font-size: 12px; color: rgba(255,255,255,0.65); }
-  .training-body { padding: 18px 20px; background: #fff; }
+  .training-body { padding: 18px 20px; background: var(--panel); }
   .training-body ul { list-style: none; padding: 0; }
   .training-body ul li {
     font-size: 13px;
@@ -639,7 +665,7 @@
     display: flex;
     align-items: flex-start;
     gap: 8px;
-    color: #3a3733;
+    color: var(--text-soft);
   }
   .training-body ul li:last-child { border-bottom: none; }
   .training-body ul li span { color: var(--accent); font-weight: 700; flex-shrink: 0; }
@@ -662,11 +688,11 @@
     color: var(--accent);
     margin-bottom: 6px;
   }
-  .seller-tip p { font-size: 13px; color: #3a3733; line-height: 1.6; }
+  .seller-tip p { font-size: 13px; color: var(--text-soft); line-height: 1.6; }
   .seller-tip ul { list-style: none; padding: 0; margin-top: 8px; }
   .seller-tip ul li {
     font-size: 12.5px;
-    color: #3a3733;
+    color: var(--text-soft);
     padding: 3px 0;
     display: flex;
     gap: 8px;
@@ -696,7 +722,7 @@
     height: 48px;
     border-radius: 50%;
     background: var(--ink);
-    color: #fff;
+    color: var(--paper);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -765,7 +791,7 @@
     font-family: 'Syne', sans-serif;
     font-size: 10px;
     font-weight: 700;
-    color: #fff;
+    color: var(--paper);
     border-radius: 3px;
     transition: width 0.6s ease;
   }
@@ -773,7 +799,7 @@
   /* Callout */
   .callout-box {
     background: var(--ink);
-    color: #fff;
+    color: var(--paper);
     padding: 20px 24px;
     border-radius: 6px;
     margin-top: 16px;
@@ -792,67 +818,460 @@
   @media print {
     .dimensions-strip { page-break-inside: avoid; }
   }
+
+
+/* ===== 2026 Opus-inspired modern shell refresh ===== */
+:root {
+  --bg: #07111f;
+  --bg2: #0d1728;
+  --surface: rgba(12, 21, 36, 0.78);
+  --surface-2: rgba(18, 29, 48, 0.96);
+  --surface-3: rgba(255,255,255,0.04);
+  --text: #f5f7fb;
+  --muted-2: #9aa7bd;
+  --line-2: rgba(255,255,255,0.08);
+  --glow: rgba(95, 163, 255, 0.18);
+  --orange: #ff7a30;
+  --blue: #77b5ff;
+  --green: #4fe0a0;
+  --purple: #b18cff;
+}
+html { scroll-behavior: smooth; }
+body {
+  background:
+    radial-gradient(circle at top left, rgba(86,132,255,0.18), transparent 28%),
+    radial-gradient(circle at 85% 10%, rgba(255,122,48,0.18), transparent 26%),
+    linear-gradient(180deg, #07111f 0%, #091321 45%, #07111f 100%);
+  color: var(--text);
+  font-size: 15px;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 52px 52px;
+  mask-image: linear-gradient(180deg, rgba(0,0,0,0.45), transparent 88%);
+}
+.page-shell {
+  width: min(1380px, calc(100vw - 40px));
+  margin: 0 auto;
+  padding: 26px 0 56px;
+  position: relative;
+}
+.hero-shell {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line-2);
+  border-radius: 30px;
+  background: linear-gradient(135deg, rgba(12,21,36,0.98), rgba(18,29,48,0.92));
+  box-shadow: 0 24px 60px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.05);
+  margin-bottom: 18px;
+}
+.hero-shell::before,
+.hero-shell::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(10px);
+}
+.hero-shell::before {
+  width: 340px; height: 340px; right: -100px; top: -120px;
+  background: radial-gradient(circle, rgba(119,181,255,0.28), transparent 65%);
+}
+.hero-shell::after {
+  width: 280px; height: 280px; left: -80px; bottom: -120px;
+  background: radial-gradient(circle, rgba(255,122,48,0.24), transparent 68%);
+}
+.hero-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.9fr);
+  gap: 22px;
+  padding: 38px;
+}
+.hero-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 300px;
+}
+.hero-kicker, .section-eyebrow {
+  color: #98a6bd;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 600;
+}
+.hero-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(42px, 6vw, 68px);
+  line-height: 0.95;
+  margin: 14px 0 18px;
+  max-width: 780px;
+}
+.hero-title span {
+  background: linear-gradient(90deg, #ffffff, #91beff 45%, #ff8e57 95%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero-sub {
+  font-size: 17px;
+  line-height: 1.7;
+  color: #c4cfdf;
+  max-width: 760px;
+}
+.hero-chips { display:flex; flex-wrap:wrap; gap:12px; margin-top:24px; }
+.hero-chip {
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: #d9e2f1;
+  font-size: 12px;
+}
+.hero-side {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  align-content: start;
+}
+.hero-stat, .summary-left, .summary-right, .chart-block, .tier-card, .callout-box, .seller-tip, .cat-flow, .training-card, .pricing-card, .phase-item, .dim-overview-item, .service-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.025));
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 24px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.hero-stat {
+  padding: 18px 18px 20px;
+  min-height: 108px;
+  backdrop-filter: blur(12px);
+}
+.hero-stat-label {
+  color: #93a4bf;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 10px;
+  margin-bottom: 10px;
+}
+.hero-stat-value {
+  font-family: 'Syne', sans-serif;
+  font-size: 28px;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.hero-stat-copy { color:#c6d2e3; font-size:13px; line-height:1.55; }
+.hero-quicklist {
+  margin-top: 18px;
+  display: grid;
+  gap: 10px;
+}
+.hero-quickitem {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(10px);
+}
+.hero-quickdot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--accent);
+  margin-top: 7px;
+  flex: 0 0 auto;
+}
+.hero-quicktext {
+  color: #d6deea;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.hero-quicktext strong { color: #ffffff; font-weight: 600; }
+.training-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+  gap: 24px;
+  align-items: stretch;
+}
+.training-support {
+  display: grid;
+  gap: 16px;
+}
+.training-note {
+  border: 1px solid var(--rule);
+  border-radius: 22px;
+  padding: 22px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--panel) 96%, transparent), color-mix(in srgb, var(--surface-muted) 88%, transparent));
+}
+.training-note-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tier4);
+  margin-bottom: 10px;
+}
+.training-note p {
+  font-size: 13px;
+  color: var(--text-soft);
+  line-height: 1.65;
+}
+.nav-shell {
+  position: sticky;
+  top: 16px;
+  z-index: 20;
+  margin-bottom: 22px;
+}
+.dimensions-strip {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  border: none;
+  padding: 12px;
+  border-radius: 24px;
+  background: rgba(9, 18, 32, 0.82);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.18);
+}
+.dim-card {
+  min-height: 108px;
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 20px;
+  background: rgba(255,255,255,0.03);
+  transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
+}
+.dim-card:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.12);
+  transform: translateY(-2px);
+}
+.dim-card.active {
+  background: linear-gradient(180deg, rgba(119,181,255,0.16), rgba(255,255,255,0.05));
+  border: 1px solid rgba(119,181,255,0.34);
+  border-bottom: 1px solid rgba(119,181,255,0.34);
+  box-shadow: 0 0 0 1px rgba(119,181,255,0.08), 0 18px 30px rgba(11,22,38,0.24);
+}
+.dim-letter, .dim-label, .dim-desc, .dim-arrow { color: var(--text); }
+.dim-letter { font-size: 28px; margin-bottom: 8px; }
+.dim-label { font-size: 12px; color: #edf3ff; margin-bottom: 8px; }
+.dim-desc { font-size: 12px; color: #9dafc8; max-width: 20ch; }
+.dim-arrow { bottom: 14px; right: 16px; color: #83b8ff; }
+.content-wrap { padding: 0; }
+.tab-panel.active { display: block; animation: panelIn .28s ease; }
+@keyframes panelIn { from { opacity:0; transform: translateY(8px);} to { opacity:1; transform: translateY(0);} }
+.summary-layout, .dim-tab-content, .charts-row, .services-grid, .tier-grid, .training-grid, .pricing-grid {
+  gap: 20px !important;
+}
+.summary-layout {
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  border: none;
+}
+.summary-left, .summary-right {
+  padding: 28px;
+}
+.section-heading {
+  color: #f5f8ff;
+  font-size: clamp(26px, 3.5vw, 38px);
+  line-height: 1.08;
+  margin-bottom: 14px;
+}
+.section-body, .section-body p, .tier-card-desc, .cat-info-scenario, .seller-tip, .callout-box, .chart-sub, .training-body, .pc-price, .t-desc, .ms-desc {
+  color: #c5d1e2;
+}
+.dim-overview-grid, .services-grid, .tier-grid, .training-grid, .pricing-grid { margin-top: 20px; }
+.dim-overview-item {
+  border-left: none;
+  padding: 18px;
+  background: rgba(255,255,255,0.04);
+}
+.dim-overview-name, .service-card-title, .tier-card-title, .cat-info-title, .phase-title, .training-header, .pc-title, .t-name, .ms-name, .chart-title {
+  color: #f4f7fd;
+}
+.service-card, .training-card, .pricing-card, .phase-item { padding: 20px; }
+.service-card-icon {
+  width: 44px; height: 44px; display:grid; place-items:center;
+  border-radius: 14px; background: rgba(255,255,255,0.06); margin-bottom: 12px;
+}
+.chart-block {
+  padding: 24px;
+  min-height: 100%;
+}
+.chart-title { font-size: 18px; margin-bottom: 6px; }
+.chart-sub { font-size: 13px; margin-bottom: 14px; }
+.chart-container {
+  border-radius: 18px;
+  background: rgba(5,12,22,0.55);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 10px;
+}
+.dim-tab-content { grid-template-columns: 330px minmax(0, 1fr); }
+.dim-sidebar {
+  border-radius: 28px;
+  padding: 30px 24px;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.18);
+  position: sticky;
+  top: 104px;
+  align-self: start;
+}
+.dim-sidebar h2 { color: var(--paper); font-family: 'Syne', sans-serif; font-size: 30px; line-height: 1.05; margin: 12px 0; }
+.dim-sidebar-q { color: rgba(255,255,255,0.82); font-size: 15px; line-height: 1.75; }
+.dim-main > * + * { margin-top: 20px; }
+.tier-card { padding: 22px; }
+.tier-card-indicators { margin-top: 14px; display:flex; flex-wrap:wrap; gap:10px; }
+.indicator-chip, .cell-badge {
+  border-radius: 999px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: #ebf2ff;
+}
+.callout-box, .seller-tip { padding: 18px 20px; }
+.cb-label, .seller-tip-label {
+  color: var(--paper);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.cat-flow { padding: 12px; }
+.cat-row {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1.2fr) minmax(220px, 0.9fr);
+  gap: 18px;
+  align-items: start;
+  padding: 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.cat-number {
+  border-radius: 18px;
+  box-shadow: 0 14px 24px rgba(0,0,0,0.18);
+}
+.int-matrix, .deploy-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border-radius: 22px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.int-matrix th, .int-matrix td, .deploy-table th, .deploy-table td {
+  border-color: rgba(255,255,255,0.07) !important;
+  color: #d6dfed;
+  background: transparent;
+}
+.int-matrix th, .deploy-table th {
+  background: rgba(255,255,255,0.05);
+  color: var(--paper);
+}
+.effort-bar-wrap {
+  background: rgba(255,255,255,0.08);
+  border-radius: 999px;
+}
+.effort-bar-fill { border-radius: 999px; }
+.page-footer {
+  margin-top: 32px;
+  color: #7f8ea8;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+small { color: #93a5bf; }
+strong { color: var(--paper); }
+@media (max-width: 1180px) {
+  .hero-grid, .summary-layout, .dim-tab-content, .charts-row, .services-grid, .tier-grid, .training-grid, .pricing-grid, .training-layout { grid-template-columns: 1fr !important; }
+  .dim-sidebar { position: relative; top: auto; }
+  .dimensions-strip { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 760px) {
+  .page-shell { width: min(100vw - 20px, 1380px); padding-top: 12px; }
+  .hero-grid { padding: 22px; }
+  .hero-title { font-size: 36px; }
+  .dimensions-strip { grid-template-columns: 1fr; }
+  .dim-card { min-height: auto; }
+  .summary-left, .summary-right, .chart-block, .tier-card, .service-card, .training-card, .pricing-card, .phase-item, .callout-box, .seller-tip { padding: 18px; }
+  .cat-row { grid-template-columns: 1fr; }
+}
+
 </style>
 </head>
 <body>
+<div class="page-shell">
+  <section class="hero-shell">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <div>
+          <div class="hero-kicker">Opus Solutions · Internal sales reference</div>
+          <h1 class="hero-title">Solutions Delivery pricing guide for <span>confident, modern scoping</span></h1>
+          <p class="hero-sub">A sharper, structured approach for qualifying delivery scope, structuring pricing conversations, and moving from early discovery to exact calculator-based proposals with less friction.</p>
+          <div class="hero-chips">
+            <div class="hero-chip">Implementation services only</div>
+            <div class="hero-chip">Excludes licensing & hourly consulting</div>
+            <div class="hero-chip">Seller confidential</div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-side">
+        <div class="hero-stat">
+          <div class="hero-stat-label">Framework</div>
+          <div class="hero-stat-value">4 dimensions</div>
+          <div class="hero-stat-copy">Use case complexity, integration strategy, deployment model, and enablement together shape delivery effort, risk, and pricing.</div>
+          <div class="hero-quicklist">
+            <div class="hero-quickitem">
+              <span class="hero-quickdot"></span>
+              <div class="hero-quicktext"><strong>Start in Summary</strong> for the commercial framing, then go deeper by dimension when the opportunity needs more precision.</div>
+            </div>
+            <div class="hero-quickitem">
+              <span class="hero-quickdot"></span>
+              <div class="hero-quicktext"><strong>Use the calculator last</strong> to convert the qualitative scoping discussion into exact customer-ready figures.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<!-- MASTHEAD -->
-<div class="masthead">
-  <div class="masthead-brand">
-    <div class="masthead-eyebrow">Opus Solutions · Internal Sales Reference</div>
-    <div class="masthead-title">Delivery Pricing <span>Guide</span></div>
+  <div class="nav-shell">
+    <div class="dimensions-strip">
+      <div class="dim-card active" onclick="switchTab('summary')">
+        <div class="dim-letter" style="color:#ff9b66">✦</div>
+        <div class="dim-label">Summary</div>
+        <div class="dim-desc">Overview & service scope</div>
+        <div class="dim-arrow">▲</div>
+      </div>
+      <div class="dim-card" onclick="switchTab('dimA')">
+        <div class="dim-letter">A</div>
+        <div class="dim-label">Use Case Complexity</div>
+        <div class="dim-desc">Quantity & cognitive load of automations</div>
+        <div class="dim-arrow">→</div>
+      </div>
+      <div class="dim-card" onclick="switchTab('dimB')">
+        <div class="dim-letter">B</div>
+        <div class="dim-label">Integration Strategy</div>
+        <div class="dim-desc">Systems, methods & build complexity</div>
+        <div class="dim-arrow">→</div>
+      </div>
+      <div class="dim-card" onclick="switchTab('dimC')">
+        <div class="dim-letter">C</div>
+        <div class="dim-label">Deployment Strategy</div>
+        <div class="dim-desc">Where the platform lives & complexity</div>
+        <div class="dim-arrow">→</div>
+      </div>
+      <div class="dim-card" onclick="switchTab('dimD')">
+        <div class="dim-letter" style="color:#7ef0b8">D</div>
+        <div class="dim-label">Enablement & Training</div>
+        <div class="dim-desc">Training guidance & seller positioning</div>
+        <div class="dim-arrow">→</div>
+      </div>
+    </div>
   </div>
-  <div class="masthead-meta">
-    <p>Implementation Services Only</p>
-    <p>Excludes software licensing & hourly consulting</p>
-    <div class="masthead-badge">Seller Confidential</div>
-  </div>
-</div>
 
-<!-- INTRO BAND -->
-<div class="intro-band">
-  <div class="intro-band-icon">⚡</div>
-  <p>
-    This guide helps you price <strong>Opus Solutions implementations</strong> with confidence. When scoping a prospect, you are assessing four dimensions that determine total delivery effort and price. Use the Summary tab for a quick overview, then dive into each dimension for detailed guidance when needed.
-  </p>
-</div>
-
-<!-- DIMENSIONS NAVIGATION STRIP -->
-<div class="dimensions-strip">
-  <div class="dim-card active" onclick="switchTab('summary')">
-    <div class="dim-letter" style="color:#c8501a">✦</div>
-    <div class="dim-label">Summary</div>
-    <div class="dim-desc">Overview & service scope</div>
-    <div class="dim-arrow">▲</div>
-  </div>
-  <div class="dim-card" onclick="switchTab('dimA')">
-    <div class="dim-letter">A</div>
-    <div class="dim-label">Use Case Complexity</div>
-    <div class="dim-desc">Quantity & cognitive load of automations</div>
-    <div class="dim-arrow">→</div>
-  </div>
-  <div class="dim-card" onclick="switchTab('dimB')">
-    <div class="dim-letter">B</div>
-    <div class="dim-label">Integration Strategy</div>
-    <div class="dim-desc">Systems, methods & build complexity</div>
-    <div class="dim-arrow">→</div>
-  </div>
-  <div class="dim-card" onclick="switchTab('dimC')">
-    <div class="dim-letter">C</div>
-    <div class="dim-label">Deployment Strategy</div>
-    <div class="dim-desc">Where the platform lives & complexity</div>
-    <div class="dim-arrow">→</div>
-  </div>
-  <div class="dim-card" onclick="switchTab('dimD')">
-    <div class="dim-letter" style="color:#2d7a45">D</div>
-    <div class="dim-label">Enablement & Training</div>
-    <div class="dim-desc">Training packages & seller guidance</div>
-    <div class="dim-arrow">→</div>
-  </div>
-</div>
-
-<!-- CONTENT AREA -->
-<div class="content-wrap">
+  <div class="content-wrap">
 
   <!-- ══════════════════════════════════ SUMMARY TAB ══════════════════════════════════ -->
   <div id="tab-summary" class="tab-panel active">
@@ -1135,15 +1554,15 @@
             <div>
               <div style="font-size:12px; color:var(--mid); font-style:italic; margin-bottom:10px">Follow these steps for every integration request:</div>
               <div style="display:grid; gap:8px;">
-                <div style="display:flex; gap:12px; align-items:start; padding:10px 14px; background:#fff; border:1px solid var(--rule); border-radius:4px; font-size:12.5px;">
+                <div style="display:flex; gap:12px; align-items:start; padding:10px 14px; background:var(--panel); border:1px solid var(--rule); border-radius:4px; font-size:12.5px;">
                   <span style="font-family:'Syne',sans-serif; font-weight:800; font-size:16px; color:var(--accent);">1</span>
                   <div><strong>Check Actions:</strong> Do we have the exact action needed?<br><span style="color:var(--mid)">Yes → Cat.1 &nbsp;|&nbsp; No → Step 2</span></div>
                 </div>
-                <div style="display:flex; gap:12px; align-items:start; padding:10px 14px; background:#fff; border:1px solid var(--rule); border-radius:4px; font-size:12.5px;">
+                <div style="display:flex; gap:12px; align-items:start; padding:10px 14px; background:var(--panel); border:1px solid var(--rule); border-radius:4px; font-size:12.5px;">
                   <span style="font-family:'Syne',sans-serif; font-weight:800; font-size:16px; color:var(--accent);">2</span>
                   <div><strong>Check Connection:</strong> Are we already connected?<br><span style="color:var(--mid)">Yes → Cat.2 &nbsp;|&nbsp; No → Step 3</span></div>
                 </div>
-                <div style="display:flex; gap:12px; align-items:start; padding:10px 14px; background:#fff; border:1px solid var(--rule); border-radius:4px; font-size:12.5px;">
+                <div style="display:flex; gap:12px; align-items:start; padding:10px 14px; background:var(--panel); border:1px solid var(--rule); border-radius:4px; font-size:12.5px;">
                   <span style="font-family:'Syne',sans-serif; font-weight:800; font-size:16px; color:var(--accent);">3</span>
                   <div><strong>Check Technology:</strong> Modern (REST) or Legacy?<br><span style="color:var(--mid)">Modern → Cat.3 &nbsp;|&nbsp; Legacy → Cat.4</span></div>
                 </div>
@@ -1324,37 +1743,37 @@
             <div class="pricing-card">
               <div class="pricing-card-header">
                 <div class="pc-title">With Vendor Access <small>(Default)</small></div>
-                <div class="pc-price">$100k–$110k <small>project fee</small></div>
+                <div class="pc-price">$70k–$80k <small>project fee</small></div>
               </div>
               <div class="pricing-card-body">1 Prod + 1 Staging. Dedicated isolated environment on customer's or AppliedAI's AWS/Azure. <strong>6.5 weeks</strong> total effort / 2–3 weeks elapsed.</div>
             </div>
             <div class="pricing-card">
               <div class="pricing-card-header" style="background:#8a1010">
                 <div class="pc-title">Without Vendor Access <small>("Blind Deploy")</small></div>
-                <div class="pc-price">$130k–$150k+ <small>project fee</small></div>
+                <div class="pc-price">$100k–$120k+ <small>project fee</small></div>
               </div>
               <div class="pricing-card-body">Dedicated isolated environment on customer's cloud. No access — higher coordination cost. <strong>10 weeks</strong> total effort / 4–5 weeks elapsed.</div>
             </div>
             <div class="pricing-card">
               <div class="pricing-card-header" style="background:#2d5a2d">
                 <div class="pc-title">Private Multi-Tenant — With Access</div>
-                <div class="pc-price">$100k–$110k <small>initial</small></div>
+                <div class="pc-price">$70k–$80k <small>initial</small></div>
               </div>
               <div class="pricing-card-body">Opus manages multiple sub-entities under shared infra on customer's cloud. <strong>Subsequent sub-entities onboarded at no additional cost.</strong></div>
             </div>
             <div class="pricing-card">
               <div class="pricing-card-header" style="background:#444">
-                <div class="pc-title">Add-On DR Environment</div>
+                <div class="pc-title">Add-On or DR Environment</div>
                 <div class="pc-price">$30,000 <small>add-on</small></div>
               </div>
-              <div class="pricing-card-body">Deploying Hot-Hot / Hot-Warm disaster recovery instance on customer's or AppliedAI's cloud subscription. Ongoing maintenance: <strong>10–15% of ACV</strong>.</div>
+              <div class="pricing-card-body">Deploying Hot-Hot / Hot-Warm disaster recovery instance or addiotnal non production instanc on customer's or AppliedAI's cloud subscription. <strong>10–15% of ACV</strong>.</div>
             </div>
           </div>
         </div>
 
         <!-- Milestone Payment -->
         <div style="margin-top:28px">
-          <div class="section-eyebrow">Payment Structure</div>
+          <div class="section-eyebrow">Typical Payment Structure</div>
           <div class="section-heading">Milestone-Linked Payments</div>
           <div class="milestone-bar">
             <div class="ms-item">
@@ -1434,7 +1853,7 @@
   <!-- ══════════════════════════════════ DIMENSION D ══════════════════════════════════ -->
   <div id="tab-dimD" class="tab-panel">
     <div class="dim-tab-content">
-      <div class="dim-sidebar" style="background:#1a3d1a">
+      <div class="dim-sidebar" style="background:var(--sidebar-d)">
         <div class="dim-sidebar-letter"><span>D</span></div>
         <h2>Enablement & Training</h2>
         <p>This dimension helps us understand how much training the customer needs and which package suits them best.</p>
@@ -1447,21 +1866,21 @@
         <div class="section-eyebrow">Seller Discovery Questions</div>
         <div class="section-heading">How to Qualify Training Needs</div>
         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:12px">
-          <div style="border:1px solid var(--rule); border-radius:6px; padding:16px; background:#fff;">
+          <div style="border:1px solid var(--rule); border-radius:6px; padding:16px; background:var(--panel);">
             <div style="font-family:'Syne',sans-serif; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--tier4); margin-bottom:10px;">① Experience Level</div>
             <ul style="list-style:none; padding:0;">
               <li style="font-size:12px; color:var(--mid); padding:4px 0; border-bottom:1px solid var(--rule);">"Have you used tools like this before?"</li>
               <li style="font-size:12px; color:var(--mid); padding:4px 0;">"How confident is your team with new technology adoption?"</li>
             </ul>
           </div>
-          <div style="border:1px solid var(--rule); border-radius:6px; padding:16px; background:#fff;">
+          <div style="border:1px solid var(--rule); border-radius:6px; padding:16px; background:var(--panel);">
             <div style="font-family:'Syne',sans-serif; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--tier4); margin-bottom:10px;">② Team Size & Roles</div>
             <ul style="list-style:none; padding:0;">
               <li style="font-size:12px; color:var(--mid); padding:4px 0; border-bottom:1px solid var(--rule);">Identify who will use the solution</li>
               <li style="font-size:12px; color:var(--mid); padding:4px 0;">Larger teams / multiple roles → more extensive packages</li>
             </ul>
           </div>
-          <div style="border:1px solid var(--rule); border-radius:6px; padding:16px; background:#fff;">
+          <div style="border:1px solid var(--rule); border-radius:6px; padding:16px; background:var(--panel);">
             <div style="font-family:'Syne',sans-serif; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--tier4); margin-bottom:10px;">③ Value-Based Framing</div>
             <ul style="list-style:none; padding:0;">
               <li style="font-size:12px; color:var(--mid); padding:4px 0; border-bottom:1px solid var(--rule);">"How important is fast adoption & minimizing errors?"</li>
@@ -1473,11 +1892,11 @@
         <div style="margin-top:28px">
           <div class="section-eyebrow">Training Packages</div>
           <div class="section-heading">Train the Trainer Program</div>
-          <div class="training-grid">
+          <div class="training-layout">
             <div class="training-card">
-              <div class="training-header essentials">
-                <div class="t-name">Essentials Package</div>
-                <div class="t-desc">For teams new to workflow automation</div>
+              <div class="training-header advanced">
+                <div class="t-name">Advanced Package</div>
+                <div class="t-desc">For teams that want confident self-sufficiency after launch</div>
               </div>
               <div class="training-body">
                 <ul>
@@ -1490,47 +1909,54 @@
                 </ul>
               </div>
             </div>
-            <div class="training-card">
-              <div class="training-header advanced">
-                <div class="t-name">Advanced Package</div>
-                <div class="t-desc">For technical teams ready to scale independently</div>
+            <div class="training-support">
+              <div class="training-note">
+                <div class="training-note-label">Ideal fit</div>
+                <p>Best suited for customers that want core users enabled to build, troubleshoot, publish, and maintain workflows internally without becoming dependent on ongoing vendor support.</p>
               </div>
-              <div class="training-body">
-                <ul>
-                  <li><span>📚</span> All 5 Essentials sessions included</li>
-                  <li><span>🔗</span> Advanced integration development</li>
-                  <li><span>🤖</span> Agentic AI automation design patterns</li>
-                  <li><span>📊</span> Performance optimization & monitoring</li>
-                  <li><span>🏗️</span> Custom connector development</li>
-                  <li><span>🎓</span> Certification & competency assessment</li>
-                </ul>
+              <div class="training-note">
+                <div class="training-note-label">Seller framing</div>
+                <p>Position this package around adoption velocity, internal capability building, and stronger long-term ROI rather than as a standalone training cost.</p>
               </div>
             </div>
           </div>
         </div>
 
-        <div style="margin-top:28px; display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start;">
-          <div>
-            <div class="section-eyebrow">Training ROI</div>
-            <div class="section-heading" style="font-size:17px">Why Trained Teams Win</div>
-            <div class="chart-container" style="height:220px">
-              <canvas id="chartTrainingROI"></canvas>
+        <div style="margin-top:28px;">
+          <div class="section-eyebrow">Training ROI</div>
+          <div class="section-heading" style="font-size:17px">Why Trained Teams Win</div>
+          <p style="margin:8px 0 16px; font-size:13px; color:var(--mid); max-width:760px; line-height:1.6;">The strongest training conversations connect enablement to faster adoption, lower support overhead, and more internal momentum after launch.</p>
+
+          <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:12px; margin-bottom:16px;">
+            <div style="background:linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03)); border:1px solid var(--rule); border-radius:16px; padding:16px 16px 14px; backdrop-filter:blur(8px); min-height:136px;">
+              <div style="font-family:'Syne',sans-serif; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:var(--mid); margin-bottom:10px;">Adoption speed</div>
+              <div style="font-family:'Syne',sans-serif; font-size:28px; font-weight:800; color:var(--paper); line-height:1; margin-bottom:8px;">2–3x</div>
+              <div style="font-size:12px; color:var(--text-soft); line-height:1.5;">Faster confidence ramp for core users when structured training is included.</div>
+            </div>
+            <div style="background:linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03)); border:1px solid var(--rule); border-radius:16px; padding:16px 16px 14px; backdrop-filter:blur(8px); min-height:136px;">
+              <div style="font-family:'Syne',sans-serif; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:var(--mid); margin-bottom:10px;">Support load</div>
+              <div style="font-family:'Syne',sans-serif; font-size:28px; font-weight:800; color:var(--paper); line-height:1; margin-bottom:8px;">↓ 40%</div>
+              <div style="font-size:12px; color:var(--text-soft); line-height:1.5;">Fewer avoidable tickets as teams learn debugging, publishing, and standards upfront.</div>
+            </div>
+            <div style="background:linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03)); border:1px solid var(--rule); border-radius:16px; padding:16px 16px 14px; backdrop-filter:blur(8px); min-height:136px;">
+              <div style="font-family:'Syne',sans-serif; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:var(--mid); margin-bottom:10px;">Expansion potential</div>
+              <div style="font-family:'Syne',sans-serif; font-size:28px; font-weight:800; color:var(--paper); line-height:1; margin-bottom:8px;">↑ ROI</div>
+              <div style="font-size:12px; color:var(--text-soft); line-height:1.5;">Trained teams typically identify and launch more follow-on use cases internally.</div>
             </div>
           </div>
-          <div>
-            <div class="seller-tip" style="margin-top:0">
-              <div class="seller-tip-label">🔑 Seller Strategy — Training Upsell</div>
+          <div style="display:grid; grid-template-columns:minmax(0, 1.2fr) minmax(320px, 0.8fr); gap:16px; align-items:stretch;">
+        
+         
+            </div>
+            <div class="seller-tip" style="margin-top:0; height:100%; border-radius:18px; border-left:1px solid #f0c4b0; padding:20px 22px; background:linear-gradient(135deg, rgba(255,248,245,0.96) 0%, rgba(255,255,255,0.92) 100%); box-shadow:0 18px 38px rgba(0,0,0,0.08); display:flex; flex-direction:column; justify-content:center;">
+              <div class="seller-tip-label">🔑 Seller Strategy — Training Positioning</div>
+              <p style="font-size:13px; color:var(--text-soft); line-height:1.65; margin-bottom:10px;">Keep the conversation anchored on business outcomes: faster time to value, less dependency on vendor support, and a stronger foundation for scale.</p>
               <ul>
                 <li>Position training as a <strong>speed accelerator</strong>, not a cost item</li>
-                <li>Untrained teams = more support tickets = slower ROI for the customer</li>
-                <li>Trained teams independently build more use cases = accelerated expansion</li>
-                <li>Use the "Day One Ready" framing — <em>"Would you like your team ready before go-live?"</em></li>
-                <li>For larger deployments, Advanced package is practically mandatory for autonomy</li>
+                <li>Use the “Day One Ready” framing — <em>“Would you like your team ready before go-live?”</em></li>
+                <li>Emphasize internal capability building and post-launch sustainability</li>
+                <li>Connect training to better adoption, lower support burden, and faster expansion</li>
               </ul>
-            </div>
-            <div class="callout-box" style="margin-top:16px;">
-              <div class="cb-label">🎯 Matching Guide</div>
-              <p style="font-size:13px;"><strong>Essentials:</strong> Small teams, limited automation experience, supervised workflows.<br><br><strong>Advanced:</strong> Technical teams, scaling plans, need for independent builds, custom connectors.</p>
             </div>
           </div>
         </div>
@@ -1563,12 +1989,13 @@ const font = "'DM Sans', sans-serif";
 Chart.defaults.font.family = font;
 Chart.defaults.plugins.legend.labels.boxWidth = 12;
 Chart.defaults.plugins.legend.labels.padding = 16;
+Chart.defaults.color = '#cbd7ea';
 
 const accent  = '#c8501a';
 const accent2 = '#1a5c8a';
 const accent3 = '#2d7a45';
 const purple  = '#7b4fa8';
-const mid     = '#6b6660';
+const mid     = '#9dafc8';
 
 // ── Chart 1: Multi-use-case value curve ──
 new Chart(document.getElementById('chartValueCurve'), {
@@ -1600,8 +2027,8 @@ new Chart(document.getElementById('chartValueCurve'), {
   options: {
     responsive: true, maintainAspectRatio: false,
     scales: {
-      x: { title: { display: true, text: 'Number of Use Cases', color: mid, font:{size:10} }, grid:{color:'rgba(0,0,0,0.05)'} },
-      y: { title: { display: true, text: 'Total $k', color: accent, font:{size:10} }, grid:{color:'rgba(0,0,0,0.05)'}, ticks:{color:accent} },
+      x: { title: { display: true, text: 'Number of Use Cases', color: mid, font:{size:10} }, grid:{color:'rgba(255,255,255,0.08)'} },
+      y: { title: { display: true, text: 'Total $k', color: accent, font:{size:10} }, grid:{color:'rgba(255,255,255,0.08)'}, ticks:{color:accent} },
       y2: { position:'right', title: { display: true, text: 'Per-UC Cost $k', color: accent2, font:{size:10} }, grid:{drawOnChartArea:false}, ticks:{color:accent2} }
     },
     plugins: { legend: { position:'bottom' } }
@@ -1624,7 +2051,7 @@ new Chart(document.getElementById('chartDeployComplexity'), {
     responsive: true, maintainAspectRatio: false,
     indexAxis: 'y',
     scales: {
-      x: { max: 100, grid:{color:'rgba(0,0,0,0.05)'}, title:{display:true, text:'Relative Complexity', font:{size:10}, color:mid} },
+      x: { max: 100, grid:{color:'rgba(255,255,255,0.08)'}, title:{display:true, text:'Relative Complexity', font:{size:10}, color:mid} },
       y: { grid:{display:false}, ticks:{font:{size:10}} }
     },
     plugins: { legend:{display:false} }
@@ -1640,7 +2067,7 @@ new Chart(document.getElementById('chartIntMix'), {
       data: [30, 25, 15, 20, 10],
       backgroundColor: [accent2, '#4a9a30', '#e09020', purple, accent],
       borderWidth: 2,
-      borderColor: '#fff'
+      borderColor: 'rgba(7,17,31,0.92)'
     }]
   },
   options: {
@@ -1669,7 +2096,7 @@ new Chart(document.getElementById('chartPhaseEffort'), {
   options: {
     responsive: true, maintainAspectRatio: false,
     scales: {
-      y: { max: 70, title:{display:true, text:'% of Total Effort', font:{size:10}, color:mid}, grid:{color:'rgba(0,0,0,0.05)'} },
+      y: { max: 70, title:{display:true, text:'% of Total Effort', font:{size:10}, color:mid}, grid:{color:'rgba(255,255,255,0.08)'} },
       x: { grid:{display:false} }
     },
     plugins: { legend: { position:'bottom' } }
@@ -1701,7 +2128,7 @@ new Chart(document.getElementById('chartUseCasePrice'), {
   options: {
     responsive: true, maintainAspectRatio: false,
     scales: {
-      y: { grid:{color:'rgba(0,0,0,0.05)'}, title:{display:true, text:'Incremental $k', font:{size:10}, color:mid} },
+      y: { grid:{color:'rgba(255,255,255,0.08)'}, title:{display:true, text:'Incremental $k', font:{size:10}, color:mid} },
       y2: { position:'right', grid:{drawOnChartArea:false}, title:{display:true, text:'Cumulative $k', font:{size:10}, color:'#e09020'}, ticks:{color:'#e09020'} }
     },
     plugins: { legend: { position:'bottom' } }
@@ -1724,7 +2151,7 @@ new Chart(document.getElementById('chartTimeline'), {
     responsive: true, maintainAspectRatio: false,
     indexAxis: 'y',
     scales: {
-      x: { max: 12, grid:{color:'rgba(0,0,0,0.05)'}, title:{display:true, text:'Weeks', font:{size:10}, color:mid} },
+      x: { max: 12, grid:{color:'rgba(255,255,255,0.08)'}, title:{display:true, text:'Weeks', font:{size:10}, color:mid} },
       y: { grid:{display:false} }
     },
     plugins: { legend:{display:false} }
@@ -1743,7 +2170,7 @@ new Chart(document.getElementById('chartTrainingROI'), {
       backgroundColor: 'rgba(107,102,96,0.12)',
       pointBackgroundColor: mid,
     },{
-      label: 'With Advanced Training',
+      label: 'With Structured Training',
       data: [90, 85, 80, 85, 88, 92],
       borderColor: accent3,
       backgroundColor: 'rgba(45,122,69,0.15)',
@@ -1756,13 +2183,14 @@ new Chart(document.getElementById('chartTrainingROI'), {
       r: {
         min: 0, max: 100,
         ticks: { display: false },
-        grid: { color: 'rgba(0,0,0,0.07)' },
-        pointLabels: { font:{size:10}, color: '#3a3733' }
+        grid: { color: 'rgba(255,255,255,0.10)' },
+        pointLabels: { font:{size:10}, color: ink }
       }
     },
     plugins: { legend: { position:'bottom' } }
   }
 });
 </script>
+</div>
 </body>
 </html>
