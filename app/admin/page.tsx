@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createServiceClient } from '@/lib/supabase/server'
 import AdminDashboardClient from './AdminDashboardClient'
 import type { Quote } from '@/lib/types'
@@ -42,7 +43,15 @@ export default async function AdminPage() {
   return (
     <div className="mx-auto max-w-screen-xl px-4 sm:px-6 py-5">
       <div className="mb-5">
-        <span className="text-xs font-medium text-indigo-600 uppercase tracking-wide">Admin</span>
+        <Link
+          href="/calculator"
+          className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 mb-2 transition-colors"
+        >
+          ← Back to Calculator
+        </Link>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-indigo-600 uppercase tracking-wide">Admin</span>
+        </div>
         <h1 className="text-lg font-bold text-gray-900 mt-0.5">Quote Dashboard</h1>
         <p className="text-xs text-gray-500">All quotes across all sellers</p>
       </div>

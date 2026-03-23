@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import type { Quote } from '@/lib/types'
 
@@ -42,6 +43,12 @@ export default async function QuotesPage() {
     <div className="mx-auto max-w-screen-xl px-4 sm:px-6 py-5">
       <div className="mb-4 flex items-center justify-between">
         <div>
+          <Link
+            href="/calculator"
+            className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 mb-2 transition-colors"
+          >
+            ← Back to Calculator
+          </Link>
           <h1 className="text-lg font-bold text-gray-900">My Quotes</h1>
           <p className="text-xs text-gray-500 mt-0.5">
             {quotes.length} quote{quotes.length !== 1 ? 's' : ''} in your history
