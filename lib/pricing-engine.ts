@@ -456,11 +456,9 @@ export function formatFte(value: number | string): string {
 }
 
 export const DEFAULT_DEPLOYMENT: import('./types').DeploymentType =
-  'Multi Tenant - Opus Cloud - AWS'
+  'Single Tenant - Opus Cloud - AWS'
 
 export const DEPLOYMENT_OPTIONS: import('./types').DeploymentType[] = [
-  'Multi Tenant - Opus Cloud - AWS',
-  'Multi Tenant - Opus Cloud - Azure',
   'Single Tenant - Opus Cloud - AWS',
   'Single Tenant - Opus Cloud - Azure',
   'Single Tenant - Client Cloud - AWS',

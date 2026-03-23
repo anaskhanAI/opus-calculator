@@ -171,7 +171,7 @@ export default function CalculatorPage() {
             </div>
             <div className="mt-3">
               <label className="block text-xs font-medium text-gray-600 mb-1">
-                Notes <span className="text-gray-400 font-normal">(optional)</span>
+                Client Notes <span className="text-gray-400 font-normal">(optional)</span>
               </label>
               <textarea
                 rows={2}

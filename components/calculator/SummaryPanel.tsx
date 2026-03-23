@@ -1,7 +1,7 @@
 'use client'
 
 import type { CalculatorOutputs } from '@/lib/types'
-import { formatPrice, formatWeeks, formatHours, formatFte } from '@/lib/pricing-engine'
+import { formatPrice, formatWeeks, formatFte } from '@/lib/pricing-engine'
 
 interface SummaryPanelProps {
   outputs: CalculatorOutputs
@@ -18,9 +18,8 @@ const ROWS: { key: keyof Omit<CalculatorOutputs, 'projectTotal'>; label: string 
 export default function SummaryPanel({ outputs }: SummaryPanelProps) {
   return (
     <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-      <div className="border-b border-gray-100 px-4 py-3 flex items-center justify-between">
-        <h2 className="text-xs font-semibold text-gray-800 uppercase tracking-wider">Live Summary</h2>
-        <span className="text-[10px] text-gray-400">Updates in real time</span>
+      <div className="border-b border-gray-100 px-4 py-3">
+        <h2 className="text-xs font-semibold text-gray-800 uppercase tracking-wider">Summary</h2>
       </div>
 
       <div className="overflow-x-auto">
@@ -28,16 +27,12 @@ export default function SummaryPanel({ outputs }: SummaryPanelProps) {
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50/60">
               <th className="py-2 pl-4 pr-2 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider w-[42%]">
-                Line Item
               </th>
               <th className="py-2 px-2 text-right text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
                 Price
               </th>
               <th className="py-2 px-2 text-right text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
-                Wks
-              </th>
-              <th className="py-2 px-2 text-right text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
-                Hrs
+                Effort (wks)
               </th>
               <th className="py-2 pl-2 pr-4 text-right text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
                 FTE
@@ -59,9 +54,6 @@ export default function SummaryPanel({ outputs }: SummaryPanelProps) {
                   <td className="py-2 px-2 text-right tabular-nums">
                     {formatWeeks(item.weeks)}
                   </td>
-                  <td className="py-2 px-2 text-right tabular-nums">
-                    {formatHours(item.hours)}
-                  </td>
                   <td className="py-2 pl-2 pr-4 text-right tabular-nums">
                     {formatFte(item.fte)}
                   </td>
@@ -79,9 +71,6 @@ export default function SummaryPanel({ outputs }: SummaryPanelProps) {
               </td>
               <td className="py-3 px-2 text-right font-semibold text-gray-700 tabular-nums text-xs">
                 {formatWeeks(outputs.projectTotal.weeks)}
-              </td>
-              <td className="py-3 px-2 text-right font-semibold text-gray-700 tabular-nums text-xs">
-                {formatHours(outputs.projectTotal.hours)}
               </td>
               <td className="py-3 pl-2 pr-4 text-right text-gray-300 text-xs">—</td>
             </tr>

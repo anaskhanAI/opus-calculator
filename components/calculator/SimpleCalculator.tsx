@@ -29,7 +29,7 @@ export default function SimpleCalculator({ inputs, onChange }: SimpleCalculatorP
 
   return (
     <div className="space-y-7">
-      {/* DIMENSION A */}
+      {/* USE CASE COMPLEXITY */}
       <section>
         {sectionHeader(
           'Use Case Complexity',
@@ -42,7 +42,6 @@ export default function SimpleCalculator({ inputs, onChange }: SimpleCalculatorP
             min={0}
             value={inputs.tier1UseCases}
             onChange={(e) => update({ tier1UseCases: Math.max(0, Number(e.target.value)) })}
-            hint="Deterministic use cases"
           />
           <Input
             label="Tier 2: Agentic AI Automation"
@@ -50,12 +49,11 @@ export default function SimpleCalculator({ inputs, onChange }: SimpleCalculatorP
             min={0}
             value={inputs.tier2UseCases}
             onChange={(e) => update({ tier2UseCases: Math.max(0, Number(e.target.value)) })}
-            hint="Probabilistic use cases"
           />
         </div>
       </section>
 
-      {/* DIMENSION B */}
+      {/* INTEGRATION STRATEGY */}
       <section>
         {sectionHeader(
           'Integration Strategy',
@@ -88,9 +86,9 @@ export default function SimpleCalculator({ inputs, onChange }: SimpleCalculatorP
         </p>
       </section>
 
-      {/* DIMENSION C */}
+      {/* DEPLOYMENT TYPE */}
       <section>
-        {sectionHeader('Deployment')}
+        {sectionHeader('Deployment Type')}
         <Select
           label="Deployment Type"
           value={inputs.deployment}
@@ -101,7 +99,7 @@ export default function SimpleCalculator({ inputs, onChange }: SimpleCalculatorP
         />
       </section>
 
-      {/* DIMENSION D */}
+      {/* TRAINING */}
       <section>
         {sectionHeader('Training')}
         <Toggle
@@ -109,33 +107,23 @@ export default function SimpleCalculator({ inputs, onChange }: SimpleCalculatorP
           checked={inputs.training}
           onChange={(v) => update({ training: v })}
         />
-        {inputs.training && (
-          <p className="text-xs text-gray-500 mt-2">
-            1 week, $20,000 fixed price included.
-          </p>
-        )}
       </section>
 
       {/* COMPLEXITY FACTOR */}
       <section>
-        {sectionHeader(
-          'Complexity Factor',
-          'Applied as a percentage of Core + Integration price'
-        )}
-        <div className="flex items-center gap-3">
-          <Input
-            label="Complexity %"
-            type="number"
-            min={0}
-            max={100}
-            value={Math.round(inputs.complexityFactor * 100)}
-            onChange={(e) =>
-              update({ complexityFactor: Math.min(1, Math.max(0, Number(e.target.value) / 100)) })
-            }
-            className="max-w-[120px]"
-          />
-          <span className="text-sm text-gray-500 mt-5">%</span>
-        </div>
+        {sectionHeader('Complexity Factor')}
+        <Input
+          label=""
+          type="number"
+          min={0}
+          max={100}
+          value={Math.round(inputs.complexityFactor * 100)}
+          onChange={(e) =>
+            update({ complexityFactor: Math.min(1, Math.max(0, Number(e.target.value) / 100)) })
+          }
+          className="max-w-[120px]"
+          placeholder="0"
+        />
       </section>
     </div>
   )
