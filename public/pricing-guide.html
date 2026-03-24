@@ -5,6 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="light">
 <title>Opus Solutions Delivery - Pricing Guide</title>
+<script>
+/* Force light mode — override matchMedia BEFORE Chart.js reads it */
+(function(){
+  var _mq = window.matchMedia.bind(window);
+  window.matchMedia = function(q){
+    if(typeof q === 'string' && q.indexOf('prefers-color-scheme') !== -1){
+      return { matches: q.indexOf('light') !== -1, media: q, onchange: null,
+        addEventListener: function(){}, removeEventListener: function(){},
+        dispatchEvent: function(){ return false; } };
+    }
+    return _mq(q);
+  };
+})();
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
@@ -1622,6 +1636,47 @@ strong { color: var(--paper); }
   .dim-card { min-height: auto; }
   .summary-left, .summary-right, .chart-block, .tier-card, .service-card, .training-card, .pricing-card, .phase-item, .callout-box, .seller-tip { padding: 18px; }
   .cat-row { grid-template-columns: 1fr; }
+}
+
+/* ── FORCE LIGHT MODE — overrides every dark block above ── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #0d0d0d !important;
+    --paper: #f5f2ec !important;
+    --mid: #6b6660 !important;
+    --rule: #d4cfc8 !important;
+    --card: #ffffff !important;
+    --panel: #ffffff !important;
+    --surface-soft: rgba(255,255,255,0.88) !important;
+    --surface-muted: #f5f5f5 !important;
+    --text-soft: #3a4560 !important;
+    --sidebar-d: #0c2515 !important;
+    --tier1: #1a5c8a !important;
+    --tier2: #c8501a !important;
+    --tier3: #7b4fa8 !important;
+    --tier4: #2d7a45 !important;
+    color-scheme: light !important;
+  }
+  body { background: #f5f2ec !important; color: #0d0d0d !important; }
+  .int-matrix tr:nth-child(even) td { background: rgba(245,242,236,0.5) !important; }
+  .badge-config { background: #ddf0e4 !important; color: #1a6638 !important; }
+  .badge-build  { background: #f0e0d8 !important; color: #8a2800 !important; }
+  .cell-badge.badge-config { background: #ddf0e4 !important; color: #1a6638 !important; padding: 2px 7px !important; }
+  .cell-badge.badge-mod    { background: color-mix(in srgb, #c8501a 14%, transparent) !important; color: #c8501a !important; padding: 2px 7px !important; }
+  .cell-badge.badge-build  { background: #f0e0d8 !important; color: #8a2800 !important; padding: 2px 7px !important; }
+  .seller-tip { background: linear-gradient(135deg, rgba(200,80,26,0.04) 0%, rgba(255,255,255,0.96) 100%) !important; border-color: #f0c4b0 !important; }
+  .seller-tip[style] { background: linear-gradient(135deg, rgba(255,248,245,0.96) 0%, rgba(255,255,255,0.92) 100%) !important; border-color: #f0c4b0 !important; }
+  .seller-tip-training { background: linear-gradient(135deg, rgba(255,248,245,0.96) 0%, rgba(255,255,255,0.92) 100%) !important; border-color: #f0c4b0 !important; box-shadow: 0 18px 38px rgba(0,0,0,0.08) !important; }
+  .cat-num-1 { background: #1a5c8a !important; }
+  .cat-num-2 { background: #b06000 !important; }
+  .cat-num-3 { background: #7b4fa8 !important; }
+  .cat-num-4 { background: #8a1010 !important; }
+  .cat-title-1 { color: #1a5c8a !important; }
+  .cat-title-2 { color: #b06000 !important; }
+  .cat-title-3 { color: #7b4fa8 !important; }
+  .cat-title-4 { color: #8a1010 !important; }
+  .tier-badge-1 { background: #ddeef8 !important; color: #1a5c8a !important; }
+  .tier-badge-2 { background: #fde8dc !important; color: #8a2800 !important; }
 }
 
 </style>

@@ -170,35 +170,17 @@ export default function CalculatorPage() {
                 onChange={(e) => setProjectName(e.target.value)}
               />
             </div>
-            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  Client Notes <span className="text-gray-400 font-normal">(optional)</span>
-                </label>
-                <textarea
-                  rows={2}
-                  placeholder="Any additional context for this quote..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 focus:border-indigo-400 resize-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  Requested Discount <span className="text-gray-400 font-normal">(optional, $)</span>
-                </label>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm text-gray-500">$</span>
-                  <input
-                    type="number"
-                    min={0}
-                    placeholder="0"
-                    value={requestedDiscount || ''}
-                    onChange={(e) => setRequestedDiscount(Math.max(0, Number(e.target.value)))}
-                    className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 focus:border-indigo-400"
-                  />
-                </div>
-              </div>
+            <div className="mt-3">
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Client Notes <span className="text-gray-400 font-normal">(optional)</span>
+              </label>
+              <textarea
+                rows={2}
+                placeholder="Any additional context for this quote..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 focus:border-indigo-400 resize-none"
+              />
             </div>
           </section>
 
@@ -209,6 +191,22 @@ export default function CalculatorPage() {
             ) : (
               <SimpleCalculator inputs={simpleInputs} onChange={setSimpleInputs} />
             )}
+
+            {/* Requested Discount — appended after Complexity Factor */}
+            <div className="mt-7 pt-5 border-t border-gray-100">
+              <h3 className="text-sm font-semibold text-gray-800 mb-3">Requested Discount</h3>
+              <div className="flex items-center gap-2 max-w-[160px]">
+                <span className="text-sm text-gray-500">$</span>
+                <input
+                  type="number"
+                  min={0}
+                  placeholder="0"
+                  value={requestedDiscount || ''}
+                  onChange={(e) => setRequestedDiscount(Math.max(0, Number(e.target.value)))}
+                  className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 focus:border-indigo-400"
+                />
+              </div>
+            </div>
           </section>
         </div>
 
