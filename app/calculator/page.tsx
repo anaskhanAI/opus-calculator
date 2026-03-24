@@ -48,11 +48,12 @@ export default function CalculatorPage() {
   const [mode, setMode] = useState<CalculatorMode>('detailed')
   const [detailedInputs, setDetailedInputs] = useState<DetailedInputs>(DEFAULT_DETAILED_INPUTS)
   const [simpleInputs, setSimpleInputs]     = useState<SimpleInputs>(DEFAULT_SIMPLE_INPUTS)
-  const [clientName, setClientName]         = useState('')
-  const [projectName, setProjectName]       = useState('')
-  const [notes, setNotes]                   = useState('')
-  const [successMsg, setSuccessMsg]         = useState('')
-  const [errorMsg, setErrorMsg]             = useState('')
+  const [clientName,         setClientName]         = useState('')
+  const [projectName,        setProjectName]        = useState('')
+  const [notes,              setNotes]              = useState('')
+  const [requestedDiscount,  setRequestedDiscount]  = useState(0)
+  const [successMsg,         setSuccessMsg]         = useState('')
+  const [errorMsg,           setErrorMsg]           = useState('')
 
   // Handle duplicate: pre-fill inputs from sessionStorage when redirected from /quotes
   useEffect(() => {
@@ -169,17 +170,35 @@ export default function CalculatorPage() {
                 onChange={(e) => setProjectName(e.target.value)}
               />
             </div>
-            <div className="mt-3">
-              <label className="block text-xs font-medium text-gray-600 mb-1">
-                Client Notes <span className="text-gray-400 font-normal">(optional)</span>
-              </label>
-              <textarea
-                rows={2}
-                placeholder="Any additional context for this quote..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 focus:border-indigo-400 resize-none"
-              />
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Client Notes <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="Any additional context for this quote..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 focus:border-indigo-400 resize-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Requested Discount <span className="text-gray-400 font-normal">(optional, $)</span>
+                </label>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm text-gray-500">$</span>
+                  <input
+                    type="number"
+                    min={0}
+                    placeholder="0"
+                    value={requestedDiscount || ''}
+                    onChange={(e) => setRequestedDiscount(Math.max(0, Number(e.target.value)))}
+                    className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 focus:border-indigo-400"
+                  />
+                </div>
+              </div>
             </div>
           </section>
 
@@ -196,7 +215,7 @@ export default function CalculatorPage() {
         {/* Right column: live summary + generate */}
         <div>
           <div className="lg:sticky lg:top-4 space-y-3">
-            <SummaryPanel outputs={outputs} />
+            <SummaryPanel outputs={outputs} discount={requestedDiscount} />
 
             {!canGenerate && (
               <p className="text-xs text-center text-gray-400">
@@ -211,6 +230,7 @@ export default function CalculatorPage() {
               clientName={clientName}
               projectName={projectName}
               notes={notes}
+              discount={requestedDiscount}
               disabled={!canGenerate}
               onSuccess={handleSuccess}
               onError={handleError}

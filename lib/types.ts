@@ -47,6 +47,7 @@ export interface DetailedInputs {
   deployment: DeploymentType          // A13: Dimension C
   training: boolean                   // A15: Dimension D (Yes/No)
   complexityFactor: number            // B16: as decimal e.g. 0.4 for 40%
+  requestedDiscount?: number          // Optional seller-applied discount in $
 }
 
 // Simple calculator inputs
@@ -58,6 +59,7 @@ export interface SimpleInputs {
   deployment: DeploymentType          // A27: Dimension C
   training: boolean                   // A29: Dimension D
   complexityFactor: number            // B30: as decimal
+  requestedDiscount?: number          // Optional seller-applied discount in $
 }
 
 // A single line item in the summary table

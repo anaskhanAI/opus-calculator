@@ -5,6 +5,7 @@ import { formatPrice, formatWeeks } from '@/lib/pricing-engine'
 
 interface SummaryPanelProps {
   outputs: CalculatorOutputs
+  discount?: number
 }
 
 const ROWS: { key: keyof Omit<CalculatorOutputs, 'projectTotal'>; label: string }[] = [
@@ -15,7 +16,13 @@ const ROWS: { key: keyof Omit<CalculatorOutputs, 'projectTotal'>; label: string 
   { key: 'complexityFactor',   label: 'Complexity Factor' },
 ]
 
-export default function SummaryPanel({ outputs }: SummaryPanelProps) {
+export default function SummaryPanel({ outputs, discount = 0 }: SummaryPanelProps) {
+  const engineTotal = outputs.projectTotal.listPrice
+  const netTotal =
+    typeof engineTotal === 'number' && discount > 0
+      ? Math.max(0, engineTotal - discount)
+      : engineTotal
+
   return (
     <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
       <div className="border-b border-gray-100 px-4 py-3">
@@ -54,6 +61,16 @@ export default function SummaryPanel({ outputs }: SummaryPanelProps) {
                 </tr>
               )
             })}
+
+            {discount > 0 && (
+              <tr className="text-red-600 border-t border-dashed border-gray-200">
+                <td className="py-2 pl-4 pr-2 font-medium">Requested Discount</td>
+                <td className="py-2 px-2 text-right tabular-nums font-semibold">
+                  -{formatPrice(discount)}
+                </td>
+                <td className="py-2 pl-2 pr-4 text-right text-gray-300">—</td>
+              </tr>
+            )}
           </tbody>
           <tfoot>
             <tr className="border-t-2 border-gray-200 bg-indigo-50/40">
@@ -61,7 +78,7 @@ export default function SummaryPanel({ outputs }: SummaryPanelProps) {
                 Project Total
               </td>
               <td className="py-3 px-2 text-right font-bold text-indigo-700 tabular-nums text-xs">
-                {formatPrice(outputs.projectTotal.listPrice)}
+                {formatPrice(netTotal)}
               </td>
               <td className="py-3 pl-2 pr-4 text-right font-semibold text-gray-700 tabular-nums text-xs">
                 {formatWeeks(outputs.projectTotal.weeks)}

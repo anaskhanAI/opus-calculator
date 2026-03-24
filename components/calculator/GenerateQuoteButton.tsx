@@ -11,6 +11,7 @@ interface GenerateQuoteButtonProps {
   clientName: string
   projectName: string
   notes: string
+  discount?: number
   disabled: boolean
   onSuccess: (quoteRef: string, quoteId: string) => void
   onError: (message: string) => void
@@ -23,6 +24,7 @@ export default function GenerateQuoteButton({
   clientName,
   projectName,
   notes,
+  discount = 0,
   disabled,
   onSuccess,
   onError,
@@ -32,7 +34,17 @@ export default function GenerateQuoteButton({
   async function handleGenerate() {
     setLoading(true)
     try {
-      // 1. POST the quote to the API first to get the quote ref
+      // Embed the discount into inputs for the audit record
+      const inputsWithDiscount = discount > 0
+        ? { ...inputs, requestedDiscount: discount }
+        : inputs
+
+      const engineTotal = outputs.projectTotal.listPrice
+      const netTotal = typeof engineTotal === 'number' && discount > 0
+        ? Math.max(0, engineTotal - discount)
+        : engineTotal
+
+      // 1. POST the quote to the API
       const response = await fetch('/api/quotes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -41,12 +53,9 @@ export default function GenerateQuoteButton({
           projectName,
           notes,
           calculatorMode: mode,
-          inputs,
+          inputs: inputsWithDiscount,
           outputs,
-          totalPrice:
-            typeof outputs.projectTotal.listPrice === 'number'
-              ? outputs.projectTotal.listPrice
-              : null,
+          totalPrice: typeof netTotal === 'number' ? netTotal : null,
           totalWeeks:
             typeof outputs.projectTotal.weeks === 'number'
               ? outputs.projectTotal.weeks
@@ -65,18 +74,18 @@ export default function GenerateQuoteButton({
 
       const { quote } = await response.json()
 
-      // 2. Generate and download the PDF client-side
+      // 2. Generate and download the PDF client-side (no discount shown in PDF)
       const { generateQuotePDF } = await import('@/lib/pdf-generator')
       await generateQuotePDF({
-        quoteRef: quote.quote_ref,
-        sellerName: quote.seller_name,
+        quoteRef:    quote.quote_ref,
+        sellerName:  quote.seller_name,
         sellerEmail: quote.seller_email,
         clientName,
         projectName,
         mode,
         inputs,
         outputs,
-        createdAt: quote.created_at,
+        createdAt:   quote.created_at,
         notes,
       })
 

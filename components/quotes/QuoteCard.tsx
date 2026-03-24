@@ -9,7 +9,6 @@ import { formatPrice } from '@/lib/pricing-engine'
 
 interface QuoteCardProps {
   quote: Quote
-  onDuplicate: (quote: Quote) => void
   onRedownload: (quote: Quote) => void
 }
 
@@ -23,7 +22,7 @@ function formatDate(dateStr: string) {
   })
 }
 
-export default function QuoteCard({ quote, onDuplicate, onRedownload }: QuoteCardProps) {
+export default function QuoteCard({ quote, onRedownload }: QuoteCardProps) {
   const [redownloading, setRedownloading] = useState(false)
 
   async function handleRedownload() {
@@ -71,13 +70,6 @@ export default function QuoteCard({ quote, onDuplicate, onRedownload }: QuoteCar
           onClick={handleRedownload}
         >
           Download PDF
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onDuplicate(quote)}
-        >
-          Duplicate
         </Button>
         <Link
           href={`/quotes/${quote.id}`}

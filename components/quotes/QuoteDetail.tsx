@@ -40,6 +40,14 @@ function DetailedInputsView({ inputs }: { inputs: DetailedInputs }) {
         <div className="col-span-2 sm:col-span-2">
           <InfoRow label="Deployment" value={inputs.deployment} />
         </div>
+        {inputs.requestedDiscount != null && inputs.requestedDiscount > 0 && (
+          <div className="col-span-2 sm:col-span-3">
+            <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Requested Discount</p>
+            <p className="text-xs font-semibold text-red-600 mt-0.5">
+              -${inputs.requestedDiscount.toLocaleString('en-US')}
+            </p>
+          </div>
+        )}
       </div>
       <div>
         <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">
@@ -159,7 +167,10 @@ export default function QuoteDetail({ quote }: QuoteDetailProps) {
         <h2 className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2 px-1">
           Pricing Breakdown
         </h2>
-        <SummaryPanel outputs={quote.outputs} />
+        <SummaryPanel
+          outputs={quote.outputs}
+          discount={(quote.inputs as DetailedInputs).requestedDiscount ?? 0}
+        />
       </div>
     </div>
   )
