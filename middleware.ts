@@ -39,6 +39,12 @@ export async function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname
 
+  // Block sessions from non-aaico.com accounts — sign them out immediately
+  if (session && !session.user.email?.toLowerCase().endsWith('@aaico.com')) {
+    await supabase.auth.signOut()
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+
   // Redirect unauthenticated users to /login
   // Allow /auth (callback) and /reset-password (recovery sessions have a valid session)
   if (

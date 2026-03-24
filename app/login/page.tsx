@@ -6,6 +6,12 @@ import { createClient } from '@/lib/supabase/client'
 
 type View = 'login' | 'signup' | 'signup-done' | 'forgot' | 'forgot-sent'
 
+const ALLOWED_DOMAIN = 'aaico.com'
+
+function isDomainAllowed(email: string) {
+  return email.trim().toLowerCase().endsWith(`@${ALLOWED_DOMAIN}`)
+}
+
 const inputCls =
   'w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent'
 
@@ -26,6 +32,10 @@ export default function LoginPage() {
   // ── Sign in ────────────────────────────────────────────────────────────────
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault()
+    if (!isDomainAllowed(email)) {
+      setError(`Access is restricted to @${ALLOWED_DOMAIN} accounts.`)
+      return
+    }
     setLoading(true)
     setError('')
     const supabase = createClient()
@@ -42,6 +52,10 @@ export default function LoginPage() {
   // ── Sign up ────────────────────────────────────────────────────────────────
   async function handleSignUp(e: React.FormEvent) {
     e.preventDefault()
+    if (!isDomainAllowed(email)) {
+      setError(`Access is restricted to @${ALLOWED_DOMAIN} accounts.`)
+      return
+    }
     if (password.length < 8) {
       setError('Password must be at least 8 characters.')
       return
@@ -78,6 +92,10 @@ export default function LoginPage() {
   // ── Forgot password ────────────────────────────────────────────────────────
   async function handleForgot(e: React.FormEvent) {
     e.preventDefault()
+    if (!isDomainAllowed(email)) {
+      setError(`Access is restricted to @${ALLOWED_DOMAIN} accounts.`)
+      return
+    }
     setLoading(true)
     setError('')
     const supabase = createClient()
@@ -106,7 +124,7 @@ export default function LoginPage() {
         autoComplete="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        placeholder="you@yourcompany.com"
+        placeholder={`you@${ALLOWED_DOMAIN}`}
         className={inputCls}
       />
     </div>
