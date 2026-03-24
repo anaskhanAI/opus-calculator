@@ -459,6 +459,9 @@
   }
   .int-matrix tr:nth-child(even) td { background: rgba(245,242,236,0.5); }
   .int-matrix tr:hover td { background: rgba(200,80,26,0.04); }
+  @media (prefers-color-scheme: dark) {
+    .int-matrix tr:nth-child(even) td { background: rgba(255,255,255,0.04); }
+  }
   .cell-badge {
     display: inline-block;
     font-size: 10px;
@@ -470,6 +473,16 @@
   .badge-config { background: #ddf0e4; color: #1a6638; }
   .badge-mod    { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
   .badge-build  { background: #f0e0d8; color: #8a2800; }
+  @media (prefers-color-scheme: dark) {
+    .badge-config { background: rgba(45,122,69,0.25); color: #59d38c; }
+    .badge-build  { background: rgba(200,80,26,0.25); color: #ff8d57; }
+  }
+  /* In dark mode, cell-badge also needs specific overrides vs the second CSS block */
+  @media (prefers-color-scheme: dark) {
+    .cell-badge.badge-config { background: rgba(45,122,69,0.25) !important; color: #59d38c !important; padding: 2px 7px; }
+    .cell-badge.badge-mod    { background: rgba(200,80,26,0.18) !important; color: #ff8d57 !important; padding: 2px 7px; }
+    .cell-badge.badge-build  { background: rgba(138,40,0,0.30) !important; color: #ff8d57 !important; padding: 2px 7px; }
+  }
 
   /* Category flow */
   .cat-flow { display: grid; gap: 0; }
@@ -540,6 +553,9 @@
     line-height: 1.4;
   }
   .deploy-table tr:nth-child(even) td { background: rgba(245,242,236,0.5); }
+  @media (prefers-color-scheme: dark) {
+    .deploy-table tr:nth-child(even) td { background: rgba(255,255,255,0.04); }
+  }
   .complexity-dot {
     display: inline-block;
     width: 8px; height: 8px;
@@ -678,6 +694,12 @@
     border-radius: 0 6px 6px 0;
     padding: 16px 20px;
     margin-top: 16px;
+  }
+  @media (prefers-color-scheme: dark) {
+    .seller-tip {
+      background: linear-gradient(135deg, rgba(200,80,26,0.08) 0%, rgba(255,255,255,0.03) 100%);
+      border-color: rgba(200,80,26,0.25);
+    }
   }
   .seller-tip-label {
     font-family: 'Syne', sans-serif;
@@ -845,6 +867,15 @@ body {
   color: var(--text);
   font-size: 15px;
 }
+@media (prefers-color-scheme: light) {
+  body {
+    background:
+      radial-gradient(circle at top left, rgba(86,132,255,0.08), transparent 28%),
+      radial-gradient(circle at 85% 10%, rgba(255,122,48,0.10), transparent 26%),
+      linear-gradient(180deg, #f5f2ec 0%, #f0ece4 45%, #f5f2ec 100%);
+    color: var(--ink);
+  }
+}
 body::before {
   content: "";
   position: fixed;
@@ -853,6 +884,11 @@ body::before {
   background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
   background-size: 52px 52px;
   mask-image: linear-gradient(180deg, rgba(0,0,0,0.45), transparent 88%);
+}
+@media (prefers-color-scheme: light) {
+  body::before {
+    background-image: linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+  }
 }
 .page-shell {
   width: min(1380px, calc(100vw - 40px));
@@ -868,6 +904,13 @@ body::before {
   background: linear-gradient(135deg, rgba(12,21,36,0.98), rgba(18,29,48,0.92));
   box-shadow: 0 24px 60px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.05);
   margin-bottom: 18px;
+}
+@media (prefers-color-scheme: light) {
+  .hero-shell {
+    background: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(245,242,236,0.92));
+    box-shadow: 0 24px 60px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.8);
+    border-color: rgba(0,0,0,0.08);
+  }
 }
 .hero-shell::before,
 .hero-shell::after {
@@ -905,6 +948,9 @@ body::before {
   font-size: 11px;
   font-weight: 600;
 }
+@media (prefers-color-scheme: light) {
+  .hero-kicker { color: #6b7a96; }
+}
 .hero-title {
   font-family: 'Syne', sans-serif;
   font-size: clamp(42px, 6vw, 68px);
@@ -924,6 +970,9 @@ body::before {
   color: #c4cfdf;
   max-width: 760px;
 }
+@media (prefers-color-scheme: light) {
+  .hero-sub { color: #3a4560; }
+}
 .hero-chips { display:flex; flex-wrap:wrap; gap:12px; margin-top:24px; }
 .hero-chip {
   padding: 10px 14px;
@@ -932,6 +981,13 @@ body::before {
   background: rgba(255,255,255,0.04);
   color: #d9e2f1;
   font-size: 12px;
+}
+@media (prefers-color-scheme: light) {
+  .hero-chip {
+    border-color: rgba(0,0,0,0.12);
+    background: rgba(0,0,0,0.04);
+    color: #3a4560;
+  }
 }
 .hero-side {
   display: grid;
@@ -945,6 +1001,13 @@ body::before {
   border-radius: 24px;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
 }
+@media (prefers-color-scheme: light) {
+  .hero-stat, .summary-left, .summary-right, .chart-block, .tier-card, .callout-box, .seller-tip, .cat-flow, .training-card, .pricing-card, .phase-item, .dim-overview-item, .service-card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.75));
+    border-color: rgba(0,0,0,0.08);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.9);
+  }
+}
 .hero-stat {
   padding: 18px 18px 20px;
   min-height: 108px;
@@ -957,6 +1020,9 @@ body::before {
   font-size: 10px;
   margin-bottom: 10px;
 }
+@media (prefers-color-scheme: light) {
+  .hero-stat-label { color: #6b7a96; }
+}
 .hero-stat-value {
   font-family: 'Syne', sans-serif;
   font-size: 28px;
@@ -964,6 +1030,9 @@ body::before {
   margin-bottom: 8px;
 }
 .hero-stat-copy { color:#c6d2e3; font-size:13px; line-height:1.55; }
+@media (prefers-color-scheme: light) {
+  .hero-stat-copy { color: #3a4560; }
+}
 .hero-quicklist {
   margin-top: 18px;
   display: grid;
@@ -979,6 +1048,12 @@ body::before {
   background: rgba(255,255,255,0.03);
   backdrop-filter: blur(10px);
 }
+@media (prefers-color-scheme: light) {
+  .hero-quickitem {
+    border-color: rgba(0,0,0,0.08);
+    background: rgba(255,255,255,0.6);
+  }
+}
 .hero-quickdot {
   width: 8px;
   height: 8px;
@@ -993,6 +1068,10 @@ body::before {
   line-height: 1.55;
 }
 .hero-quicktext strong { color: #ffffff; font-weight: 600; }
+@media (prefers-color-scheme: light) {
+  .hero-quicktext { color: #3a4560; }
+  .hero-quicktext strong { color: #0d0d0d; }
+}
 .training-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
@@ -1027,43 +1106,81 @@ body::before {
   top: 16px;
   z-index: 20;
   margin-bottom: 22px;
+  display: flex;
+  justify-content: center;
 }
 .dimensions-strip {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
-  border: none;
-  padding: 12px;
-  border-radius: 24px;
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 20px;
   background: rgba(9, 18, 32, 0.82);
   backdrop-filter: blur(14px);
   border: 1px solid rgba(255,255,255,0.08);
   box-shadow: 0 18px 40px rgba(0,0,0,0.18);
+  width: auto;
+}
+@media (prefers-color-scheme: light) {
+  .dimensions-strip {
+    background: rgba(255,255,255,0.88);
+    border-color: rgba(0,0,0,0.1);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+  }
 }
 .dim-card {
-  min-height: 108px;
-  padding: 18px;
+  min-height: auto;
+  padding: 10px 18px;
   border: 1px solid rgba(255,255,255,0.05);
-  border-radius: 20px;
+  border-radius: 14px;
   background: rgba(255,255,255,0.03);
   transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+@media (prefers-color-scheme: light) {
+  .dim-card {
+    border-color: rgba(0,0,0,0.07);
+    background: rgba(0,0,0,0.02);
+  }
 }
 .dim-card:hover {
-  background: rgba(255,255,255,0.06);
-  border-color: rgba(255,255,255,0.12);
-  transform: translateY(-2px);
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.14);
+  transform: translateY(-1px);
+}
+@media (prefers-color-scheme: light) {
+  .dim-card:hover {
+    background: rgba(200,80,26,0.06);
+    border-color: rgba(200,80,26,0.20);
+  }
 }
 .dim-card.active {
-  background: linear-gradient(180deg, rgba(119,181,255,0.16), rgba(255,255,255,0.05));
-  border: 1px solid rgba(119,181,255,0.34);
-  border-bottom: 1px solid rgba(119,181,255,0.34);
-  box-shadow: 0 0 0 1px rgba(119,181,255,0.08), 0 18px 30px rgba(11,22,38,0.24);
+  background: linear-gradient(135deg, rgba(119,181,255,0.20), rgba(119,181,255,0.08));
+  border: 1px solid rgba(119,181,255,0.40);
+  box-shadow: 0 0 0 1px rgba(119,181,255,0.08), 0 6px 20px rgba(11,22,38,0.20);
+}
+@media (prefers-color-scheme: light) {
+  .dim-card.active {
+    background: linear-gradient(135deg, rgba(200,80,26,0.12), rgba(200,80,26,0.05));
+    border-color: rgba(200,80,26,0.38);
+    box-shadow: 0 4px 16px rgba(200,80,26,0.14);
+  }
 }
 .dim-letter, .dim-label, .dim-desc, .dim-arrow { color: var(--text); }
-.dim-letter { font-size: 28px; margin-bottom: 8px; }
-.dim-label { font-size: 12px; color: #edf3ff; margin-bottom: 8px; }
-.dim-desc { font-size: 12px; color: #9dafc8; max-width: 20ch; }
-.dim-arrow { bottom: 14px; right: 16px; color: #83b8ff; }
+@media (prefers-color-scheme: light) {
+  .dim-letter, .dim-label, .dim-desc, .dim-arrow { color: var(--ink); }
+}
+.dim-letter { font-size: 20px; margin-bottom: 0; line-height: 1; flex-shrink: 0; }
+.dim-label { font-size: 13px; color: #edf3ff; margin-bottom: 0; font-weight: 600; }
+.dim-desc { display: none; }
+.dim-arrow { display: none; }
+@media (prefers-color-scheme: light) {
+  .dim-label { color: #1a2540; }
+}
 .content-wrap { padding: 0; }
 .tab-panel.active { display: block; animation: panelIn .28s ease; }
 @keyframes panelIn { from { opacity:0; transform: translateY(8px);} to { opacity:1; transform: translateY(0);} }
@@ -1083,8 +1200,18 @@ body::before {
   line-height: 1.08;
   margin-bottom: 14px;
 }
+@media (prefers-color-scheme: light) {
+  .section-heading { color: var(--ink); }
+}
 .section-body, .section-body p, .tier-card-desc, .cat-info-scenario, .seller-tip, .callout-box, .chart-sub, .training-body, .pc-price, .t-desc, .ms-desc {
   color: #c5d1e2;
+}
+@media (prefers-color-scheme: light) {
+  .section-body, .section-body p, .tier-card-desc, .cat-info-scenario, .chart-sub, .ms-desc {
+    color: #3a4560;
+  }
+  .seller-tip, .callout-box, .training-body { color: var(--text-soft); }
+  .pc-price, .t-desc { color: var(--paper); }
 }
 .dim-overview-grid, .services-grid, .tier-grid, .training-grid, .pricing-grid { margin-top: 20px; }
 .dim-overview-item {
@@ -1095,10 +1222,20 @@ body::before {
 .dim-overview-name, .service-card-title, .tier-card-title, .cat-info-title, .phase-title, .training-header, .pc-title, .t-name, .ms-name, .chart-title {
   color: #f4f7fd;
 }
+@media (prefers-color-scheme: light) {
+  .dim-overview-name, .service-card-title, .tier-card-title, .cat-info-title, .phase-title, .chart-title, .ms-name {
+    color: var(--ink);
+  }
+  .pc-title, .t-name { color: var(--paper); }
+  .training-header { color: var(--paper); }
+}
 .service-card, .training-card, .pricing-card, .phase-item { padding: 20px; }
 .service-card-icon {
   width: 44px; height: 44px; display:grid; place-items:center;
   border-radius: 14px; background: rgba(255,255,255,0.06); margin-bottom: 12px;
+}
+@media (prefers-color-scheme: light) {
+  .service-card-icon { background: rgba(0,0,0,0.05); }
 }
 .chart-block {
   padding: 24px;
@@ -1112,6 +1249,12 @@ body::before {
   border: 1px solid rgba(255,255,255,0.06);
   padding: 10px;
 }
+@media (prefers-color-scheme: light) {
+  .chart-container {
+    background: rgba(255,255,255,0.8);
+    border-color: rgba(0,0,0,0.08);
+  }
+}
 .dim-tab-content { grid-template-columns: 330px minmax(0, 1fr); }
 .dim-sidebar {
   border-radius: 28px;
@@ -1121,6 +1264,12 @@ body::before {
   position: sticky;
   top: 104px;
   align-self: start;
+}
+@media (prefers-color-scheme: light) {
+  .dim-sidebar {
+    border-color: rgba(0,0,0,0.1);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+  }
 }
 .dim-sidebar h2 { color: var(--paper); font-family: 'Syne', sans-serif; font-size: 30px; line-height: 1.05; margin: 12px 0; }
 .dim-sidebar-q { color: rgba(255,255,255,0.82); font-size: 15px; line-height: 1.75; }
@@ -1134,11 +1283,26 @@ body::before {
   background: rgba(255,255,255,0.04);
   color: #ebf2ff;
 }
+@media (prefers-color-scheme: light) {
+  .indicator-chip {
+    border-color: rgba(0,0,0,0.1);
+    background: rgba(0,0,0,0.04);
+    color: #3a4560;
+  }
+  /* Restore badge-specific colors overridden by the .indicator-chip,.cell-badge rule */
+  .cell-badge.badge-config { background: #ddf0e4 !important; color: #1a6638 !important; border: none; padding: 2px 7px; }
+  .cell-badge.badge-mod    { background: rgba(200,80,26,0.14) !important; color: #8a2800 !important; border: none; padding: 2px 7px; }
+  .cell-badge.badge-build  { background: #f0e0d8 !important; color: #8a2800 !important; border: none; padding: 2px 7px; }
+}
 .callout-box, .seller-tip { padding: 18px 20px; }
 .cb-label, .seller-tip-label {
   color: var(--paper);
   font-weight: 700;
   margin-bottom: 8px;
+}
+@media (prefers-color-scheme: light) {
+  .cb-label { color: var(--accent); }
+  .seller-tip-label { color: var(--accent); }
 }
 .cat-flow { padding: 12px; }
 .cat-row {
@@ -1148,6 +1312,9 @@ body::before {
   align-items: start;
   padding: 18px;
   border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+@media (prefers-color-scheme: light) {
+  .cat-row { border-bottom-color: rgba(0,0,0,0.08); }
 }
 .cat-number {
   border-radius: 18px;
@@ -1162,18 +1329,41 @@ body::before {
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.08);
 }
+@media (prefers-color-scheme: light) {
+  .int-matrix, .deploy-table {
+    background: rgba(255,255,255,0.8);
+    border-color: rgba(0,0,0,0.1);
+  }
+}
 .int-matrix th, .int-matrix td, .deploy-table th, .deploy-table td {
   border-color: rgba(255,255,255,0.07) !important;
   color: #d6dfed;
   background: transparent;
 }
+@media (prefers-color-scheme: light) {
+  .int-matrix th, .int-matrix td, .deploy-table th, .deploy-table td {
+    border-color: rgba(0,0,0,0.07) !important;
+    color: #2a3550;
+  }
+}
 .int-matrix th, .deploy-table th {
   background: rgba(255,255,255,0.05);
   color: var(--paper);
 }
+@media (prefers-color-scheme: light) {
+  .int-matrix th, .deploy-table th {
+    background: rgba(0,0,0,0.06);
+    color: var(--ink);
+  }
+}
 .effort-bar-wrap {
   background: rgba(255,255,255,0.08);
   border-radius: 999px;
+}
+@media (prefers-color-scheme: light) {
+  .effort-bar-wrap {
+    background: rgba(0,0,0,0.08);
+  }
 }
 .effort-bar-fill { border-radius: 999px; }
 .page-footer {
@@ -1181,14 +1371,249 @@ body::before {
   color: #7f8ea8;
   border-top: 1px solid rgba(255,255,255,0.08);
 }
+@media (prefers-color-scheme: light) {
+  .page-footer {
+    color: #5a6882;
+    border-top-color: rgba(0,0,0,0.1);
+  }
+}
 small { color: #93a5bf; }
 strong { color: var(--paper); }
+@media (prefers-color-scheme: light) {
+  small { color: #5a6882; }
+  strong { color: var(--ink); }
+}
 @media (max-width: 1180px) {
   .hero-grid, .summary-layout, .dim-tab-content, .charts-row, .services-grid, .tier-grid, .training-grid, .pricing-grid, .training-layout { grid-template-columns: 1fr !important; }
   .dim-sidebar { position: relative; top: auto; }
-  .dimensions-strip { grid-template-columns: repeat(2, 1fr); }
+  .dimensions-strip { flex-wrap: wrap; justify-content: center; }
+  .dim-card { flex-shrink: 0; }
 }
-@media (max-width: 760px) {
+/* ── Cat-number and cat-info-title color classes ── */
+.cat-num-1 { background: #1a5c8a; }
+.cat-num-2 { background: #e09020; }
+.cat-num-3 { background: #7b4fa8; }
+.cat-num-4 { background: #8a1010; }
+.cat-title-1 { color: #1a5c8a; }
+.cat-title-2 { color: #b06000; }
+.cat-title-3 { color: #7b4fa8; }
+.cat-title-4 { color: #8a1010; }
+@media (prefers-color-scheme: dark) {
+  .cat-num-1 { background: #1e6fa8; }
+  .cat-num-2 { background: #c07810; }
+  .cat-num-3 { background: #9060c0; }
+  .cat-num-4 { background: #a01414; }
+  .cat-title-1 { color: #6bb7ff; }
+  .cat-title-2 { color: #ffb347; }
+  .cat-title-3 { color: #c58cff; }
+  .cat-title-4 { color: #ff6b6b; }
+}
+
+/* ── Pricing card header accent backgrounds ── */
+.pc-header-danger  { background: #8a1010; }
+.pc-header-success { background: #2d5a2d; }
+.pc-header-neutral { background: #444; }
+@media (prefers-color-scheme: light) {
+  .pc-header-danger  { background: #7a0e0e; }
+  .pc-header-success { background: #235223; }
+  .pc-header-neutral { background: #3a3a3a; }
+}
+
+/* ── Training Dim D stat cards (inline dark glass cards) ── */
+.dim-d-stat-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  padding: 16px 16px 14px;
+  backdrop-filter: blur(8px);
+  min-height: 136px;
+}
+@media (prefers-color-scheme: light) {
+  .dim-d-stat-card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.75));
+  }
+}
+
+/* ── Inline seller-tip in training tab ── */
+.seller-tip-training {
+  margin-top: 0;
+  height: 100%;
+  border-radius: 18px;
+  border-left: 1px solid #f0c4b0;
+  padding: 20px 22px;
+  background: linear-gradient(135deg, rgba(255,248,245,0.96) 0%, rgba(255,255,255,0.92) 100%);
+  box-shadow: 0 18px 38px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+@media (prefers-color-scheme: dark) {
+  .seller-tip-training {
+    background: linear-gradient(135deg, rgba(200,80,26,0.10) 0%, rgba(255,255,255,0.03) 100%);
+    border-color: rgba(200,80,26,0.25);
+    box-shadow: 0 18px 38px rgba(0,0,0,0.24);
+  }
+}
+
+
+.tier-badge-1 { background: #ddeef8; color: #1a5c8a; }
+.tier-badge-2 { background: #fde8dc; color: #8a2800; }
+@media (prefers-color-scheme: dark) {
+  .tier-badge-1 { background: rgba(26,92,138,0.30); color: #6bb7ff; }
+  .tier-badge-2 { background: rgba(200,80,26,0.28); color: #ff8d57; }
+}
+
+/* ── Inline sidebar bg overrides (tabs B, C, D) ── */
+.dim-sidebar-b { background: #8a2800; }
+.dim-sidebar-c { background: #3b1f6a; }
+.dim-sidebar-d { background: var(--ink); }
+@media (prefers-color-scheme: light) {
+  .dim-sidebar-b { background: #7a2200; }
+  .dim-sidebar-c { background: #2e1656; }
+}
+
+/* ═══════════════════════════════════════════════════
+   LIGHT MODE CONTRAST FIXES — comprehensive override
+   Every rule here fixes white/near-white text that
+   becomes invisible against light backgrounds.
+   ═══════════════════════════════════════════════════ */
+@media (prefers-color-scheme: light) {
+
+  /* 1. strong tag — was forced to var(--paper) (cream) */
+  strong { color: var(--ink); }
+
+  /* 2. small tag */
+  small { color: #4a5568; }
+
+  /* 3. Dim sidebar body text & quote — white rgba on colored dark BG,
+        sidebars stay dark so these are actually fine, BUT the h2 uses
+        var(--paper) which is cream — swap to pure white for contrast */
+  .dim-sidebar p { color: rgba(255,255,255,0.82); }
+  .dim-sidebar-q { color: rgba(255,255,255,0.88); }
+  .dim-sidebar h2 { color: #ffffff; }
+
+@media (prefers-color-scheme: light) {
+  /* callout-box must keep its dark ink background — the second CSS block
+     incorrectly reset it to white glass. Restore it here. */
+  .callout-box {
+    background: var(--ink) !important;
+    border-color: transparent !important;
+  }
+  .callout-box p { color: rgba(255,255,255,0.88) !important; }
+  .callout-box strong { color: #ffffff !important; }
+}
+
+  /* 5. page-footer — var(--ink) BG is dark so white text is correct.
+        Override the second-block's light color rule back to white */
+  .page-footer { color: rgba(255,255,255,0.55); }
+  .page-footer strong { color: rgba(255,255,255,0.85); }
+
+  /* 6. effort-bar-fill percentage labels — white text on coloured bar,
+        coloured bar is always solid so white is correct here */
+  .effort-bar-fill { color: #ffffff; }
+
+  /* 7. hero-stat-value — used var(--text) which in light mode is undefined
+        in this block, falls through to #f5f7fb (near-white) */
+  .hero-stat-value { color: var(--ink); }
+
+  /* 8. Section body text block from second CSS system */
+  .section-body, .section-body p,
+  .tier-card-desc, .cat-info-scenario,
+  .chart-sub, .ms-desc { color: #3a4560; }
+
+  /* 9. Titles block from second CSS system */
+  .dim-overview-name, .service-card-title,
+  .tier-card-title, .cat-info-title,
+  .phase-title, .chart-title, .ms-name { color: var(--ink); }
+
+  /* 10. pc-price and t-desc are inside dark card headers — keep white */
+  .pc-price, .t-desc { color: #ffffff; }
+  .pc-title, .t-name { color: rgba(255,255,255,0.9); }
+  .training-header { color: #ffffff; }
+
+  /* 11. hero section text colors */
+  .hero-stat-value { color: var(--ink); }
+  .hero-stat-copy { color: #3a4560; }
+  .hero-quicktext { color: #3a4560; }
+  .hero-quicktext strong { color: var(--ink); }
+
+  /* 12. dim-label in nav pill */
+  .dim-label { color: var(--ink); }
+
+  /* 13. Inline stat card big numbers (var(--paper) on white bg) — needs !important
+        to beat the inline style="color:var(--paper)" attribute */
+  .dim-d-stat-card { color: var(--ink); }
+  .dim-d-stat-card [style*="color:var(--paper)"],
+  .dim-d-stat-card [style*="color: var(--paper)"] {
+    color: var(--ink) !important;
+  }
+
+  /* 14. service-card list items */
+  .service-card ul { color: #4a5568; }
+
+  /* 15. training-body list items */
+  .training-body ul li { color: #3a4560; }
+  .training-body ul li span { color: var(--accent); }
+
+  /* 16. seller-tip body text */
+  .seller-tip p, .seller-tip ul li { color: var(--text-soft); }
+
+  /* 17. dim-overview-q italic text */
+  .dim-overview-q { color: #4a5568; }
+
+  /* 18. hero-kicker */
+  .hero-kicker { color: #5a6882; }
+
+  /* 19. cat-deliverables checkmark list */
+  .cat-deliverables ul li { color: #3a4560; }
+
+  /* 20. phase content list items already use var(--mid) which is fine,
+        but double-check phase title */
+  .phase-title { color: var(--ink); }
+
+  /* 21. milestone code labels */
+  .ms-code { color: #6b7a96; }
+
+  /* 22. training-note body text */
+  .training-note p { color: var(--text-soft); }
+
+  /* 23. hero-chip */
+  .hero-chip { color: #3a4560; }
+
+  /* 24. indicator-chip */
+  .indicator-chip { color: #3a4560; }
+
+  /* 25. table cells */
+  .int-matrix td, .deploy-table td { color: #2a3550; }
+  .int-matrix th, .deploy-table th { color: var(--ink); }
+
+  /* 26. effort-role labels */
+  .effort-role { color: #4a5568; }
+
+  /* 27. cat-info-scenario small text */
+  .cat-info-scenario small { color: #5a6882; }
+
+  /* 28. dim-sidebar-q background on dark sidebar — keep as-is (white text on dark bg),
+        but the rgba background should be slightly more visible */
+  .dim-sidebar-q { background: rgba(255,255,255,0.10); }
+}
+
+.dim-letter-summary { color: #ff9b66; }
+.dim-letter-d       { color: #7ef0b8; }
+@media (prefers-color-scheme: light) {
+  .dim-letter-summary { color: #c8501a; }
+  .dim-letter-d       { color: #2d7a45; }
+}
+
+/* ── Seller-tip override for dark (inline style on training tab) ── */
+@media (prefers-color-scheme: dark) {
+  .seller-tip[style] {
+    background: linear-gradient(135deg, rgba(200,80,26,0.10) 0%, rgba(255,255,255,0.03) 100%) !important;
+    border-color: rgba(200,80,26,0.25) !important;
+  }
+}
+
+
   .page-shell { width: min(100vw - 20px, 1380px); padding-top: 12px; }
   .hero-grid { padding: 22px; }
   .hero-title { font-size: 36px; }
@@ -1239,7 +1664,7 @@ strong { color: var(--paper); }
   <div class="nav-shell">
     <div class="dimensions-strip">
       <div class="dim-card active" onclick="switchTab('summary')">
-        <div class="dim-letter" style="color:#ff9b66">✦</div>
+        <div class="dim-letter dim-letter-summary">✦</div>
         <div class="dim-label">Summary</div>
         <div class="dim-desc">Overview & service scope</div>
         <div class="dim-arrow">▲</div>
@@ -1263,7 +1688,7 @@ strong { color: var(--paper); }
         <div class="dim-arrow">→</div>
       </div>
       <div class="dim-card" onclick="switchTab('dimD')">
-        <div class="dim-letter" style="color:#7ef0b8">D</div>
+        <div class="dim-letter dim-letter-d">D</div>
         <div class="dim-label">Enablement & Training</div>
         <div class="dim-desc">Training guidance & seller positioning</div>
         <div class="dim-arrow">→</div>
@@ -1407,7 +1832,7 @@ strong { color: var(--paper); }
         <div class="tier-grid">
           <div class="tier-card">
             <div>
-              <div class="tier-badge" style="background:#ddeef8;color:#1a5c8a">Tier 1<br>Linear</div>
+              <div class="tier-badge tier-badge-1">Tier 1<br>Linear</div>
             </div>
             <div>
               <div class="tier-card-title">Linear Automation (Deterministic)</div>
@@ -1422,7 +1847,7 @@ strong { color: var(--paper); }
           </div>
           <div class="tier-card">
             <div>
-              <div class="tier-badge" style="background:#fde8dc;color:#8a2800">Tier 2<br>Agentic</div>
+              <div class="tier-badge tier-badge-2">Tier 2<br>Agentic</div>
             </div>
             <div>
               <div class="tier-card-title">Agentic AI Automation (Probabilistic)</div>
@@ -1465,7 +1890,7 @@ strong { color: var(--paper); }
   <!-- ══════════════════════════════════ DIMENSION B ══════════════════════════════════ -->
   <div id="tab-dimB" class="tab-panel">
     <div class="dim-tab-content">
-      <div class="dim-sidebar" style="background:#8a2800">
+      <div class="dim-sidebar dim-sidebar-b">
         <div class="dim-sidebar-letter"><span>B</span></div>
         <h2>Integration Strategy</h2>
         <p>Integrations are the <strong>highest risk factor</strong> in delivery. Categorizing them correctly is critical to accurate pricing.</p>
@@ -1482,9 +1907,9 @@ strong { color: var(--paper); }
 
         <div class="cat-flow">
           <div class="cat-row">
-            <div class="cat-number" style="background:#1a5c8a">1<span>CONFIG</span></div>
+            <div class="cat-number cat-num-1">1<span>CONFIG</span></div>
             <div class="cat-info">
-              <div class="cat-info-title" style="color:#1a5c8a">Pre-Built Activation</div>
+              <div class="cat-info-title cat-title-1">Pre-Built Activation</div>
               <div class="cat-info-scenario">You need a common tool (Gmail, Slack) and the required actions are already in our library. <span class="cell-badge badge-config">Configuring</span></div>
             </div>
             <div class="cat-deliverables">
@@ -1498,9 +1923,9 @@ strong { color: var(--paper); }
             </div>
           </div>
           <div class="cat-row">
-            <div class="cat-number" style="background:#e09020">2<span>EXTEND</span></div>
+            <div class="cat-number cat-num-2">2<span>EXTEND</span></div>
             <div class="cat-info">
-              <div class="cat-info-title" style="color:#b06000">Extended Integration</div>
+              <div class="cat-info-title cat-title-2">Extended Integration</div>
               <div class="cat-info-scenario">We're connected to your software, but your workflow requires an action we haven't mapped yet. <span class="cell-badge badge-mod">Modifying</span><br><small style="color:var(--mid); font-size:10.5px">2A: Standard (REST) · 2B: Complex (Legacy/SOAP)</small></div>
             </div>
             <div class="cat-deliverables">
@@ -1514,9 +1939,9 @@ strong { color: var(--paper); }
             </div>
           </div>
           <div class="cat-row">
-            <div class="cat-number" style="background:#7b4fa8">3<span>BUILD</span></div>
+            <div class="cat-number cat-num-3">3<span>BUILD</span></div>
             <div class="cat-info">
-              <div class="cat-info-title" style="color:#7b4fa8">New Standard Build</div>
+              <div class="cat-info-title cat-title-3">New Standard Build</div>
               <div class="cat-info-scenario">A modern SaaS tool we don't support yet. Good documentation, REST API. <span class="cell-badge badge-build">Building</span></div>
             </div>
             <div class="cat-deliverables">
@@ -1530,9 +1955,9 @@ strong { color: var(--paper); }
             </div>
           </div>
           <div class="cat-row" style="border-bottom:none">
-            <div class="cat-number" style="background:#8a1010">4<span>COMPLEX</span></div>
+            <div class="cat-number cat-num-4">4<span>COMPLEX</span></div>
             <div class="cat-info">
-              <div class="cat-info-title" style="color:#8a1010">New Complex Build</div>
+              <div class="cat-info-title cat-title-4">New Complex Build</div>
               <div class="cat-info-scenario">Older database, system behind a firewall, or specialized industry tool without modern APIs. <span class="cell-badge badge-build">Building</span></div>
             </div>
             <div class="cat-deliverables">
@@ -1635,7 +2060,7 @@ strong { color: var(--paper); }
   <!-- ══════════════════════════════════ DIMENSION C ══════════════════════════════════ -->
   <div id="tab-dimC" class="tab-panel">
     <div class="dim-tab-content">
-      <div class="dim-sidebar" style="background:#3b1f6a">
+      <div class="dim-sidebar dim-sidebar-c">
         <div class="dim-sidebar-letter"><span>C</span></div>
         <h2>Deployment Strategy</h2>
         <p>Deploying an enterprise platform is a <strong>controlled operational rollout</strong> — balancing speed, security, reliability, and commercial predictability.</p>
@@ -1748,21 +2173,21 @@ strong { color: var(--paper); }
               <div class="pricing-card-body">1 Prod + 1 Staging. Dedicated isolated environment on customer's or AppliedAI's AWS/Azure. <strong>6.5 weeks</strong> total effort / 2–3 weeks elapsed.</div>
             </div>
             <div class="pricing-card">
-              <div class="pricing-card-header" style="background:#8a1010">
+              <div class="pricing-card-header pc-header-danger">
                 <div class="pc-title">Without Vendor Access <small>("Blind Deploy")</small></div>
                 <div class="pc-price">$100k–$120k+ <small>project fee</small></div>
               </div>
               <div class="pricing-card-body">Dedicated isolated environment on customer's cloud. No access — higher coordination cost. <strong>10 weeks</strong> total effort / 4–5 weeks elapsed.</div>
             </div>
             <div class="pricing-card">
-              <div class="pricing-card-header" style="background:#2d5a2d">
+              <div class="pricing-card-header pc-header-success">
                 <div class="pc-title">Private Multi-Tenant — With Access</div>
                 <div class="pc-price">$70k–$80k <small>initial</small></div>
               </div>
               <div class="pricing-card-body">Opus manages multiple sub-entities under shared infra on customer's cloud. <strong>Subsequent sub-entities onboarded at no additional cost.</strong></div>
             </div>
             <div class="pricing-card">
-              <div class="pricing-card-header" style="background:#444">
+              <div class="pricing-card-header pc-header-neutral">
                 <div class="pc-title">Add-On or DR Environment</div>
                 <div class="pc-price">$30,000 <small>add-on</small></div>
               </div>
@@ -1928,17 +2353,17 @@ strong { color: var(--paper); }
           <p style="margin:8px 0 16px; font-size:13px; color:var(--mid); max-width:760px; line-height:1.6;">The strongest training conversations connect enablement to faster adoption, lower support overhead, and more internal momentum after launch.</p>
 
           <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:12px; margin-bottom:16px;">
-            <div style="background:linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03)); border:1px solid var(--rule); border-radius:16px; padding:16px 16px 14px; backdrop-filter:blur(8px); min-height:136px;">
+            <div class="dim-d-stat-card">
               <div style="font-family:'Syne',sans-serif; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:var(--mid); margin-bottom:10px;">Adoption speed</div>
               <div style="font-family:'Syne',sans-serif; font-size:28px; font-weight:800; color:var(--paper); line-height:1; margin-bottom:8px;">2–3x</div>
               <div style="font-size:12px; color:var(--text-soft); line-height:1.5;">Faster confidence ramp for core users when structured training is included.</div>
             </div>
-            <div style="background:linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03)); border:1px solid var(--rule); border-radius:16px; padding:16px 16px 14px; backdrop-filter:blur(8px); min-height:136px;">
+            <div class="dim-d-stat-card">
               <div style="font-family:'Syne',sans-serif; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:var(--mid); margin-bottom:10px;">Support load</div>
               <div style="font-family:'Syne',sans-serif; font-size:28px; font-weight:800; color:var(--paper); line-height:1; margin-bottom:8px;">↓ 40%</div>
               <div style="font-size:12px; color:var(--text-soft); line-height:1.5;">Fewer avoidable tickets as teams learn debugging, publishing, and standards upfront.</div>
             </div>
-            <div style="background:linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03)); border:1px solid var(--rule); border-radius:16px; padding:16px 16px 14px; backdrop-filter:blur(8px); min-height:136px;">
+            <div class="dim-d-stat-card">
               <div style="font-family:'Syne',sans-serif; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:var(--mid); margin-bottom:10px;">Expansion potential</div>
               <div style="font-family:'Syne',sans-serif; font-size:28px; font-weight:800; color:var(--paper); line-height:1; margin-bottom:8px;">↑ ROI</div>
               <div style="font-size:12px; color:var(--text-soft); line-height:1.5;">Trained teams typically identify and launch more follow-on use cases internally.</div>
@@ -1948,7 +2373,7 @@ strong { color: var(--paper); }
         
          
             </div>
-            <div class="seller-tip" style="margin-top:0; height:100%; border-radius:18px; border-left:1px solid #f0c4b0; padding:20px 22px; background:linear-gradient(135deg, rgba(255,248,245,0.96) 0%, rgba(255,255,255,0.92) 100%); box-shadow:0 18px 38px rgba(0,0,0,0.08); display:flex; flex-direction:column; justify-content:center;">
+            <div class="seller-tip seller-tip-training">
               <div class="seller-tip-label">🔑 Seller Strategy — Training Positioning</div>
               <p style="font-size:13px; color:var(--text-soft); line-height:1.65; margin-bottom:10px;">Keep the conversation anchored on business outcomes: faster time to value, less dependency on vendor support, and a stronger foundation for scale.</p>
               <ul>
@@ -1989,13 +2414,19 @@ const font = "'DM Sans', sans-serif";
 Chart.defaults.font.family = font;
 Chart.defaults.plugins.legend.labels.boxWidth = 12;
 Chart.defaults.plugins.legend.labels.padding = 16;
-Chart.defaults.color = '#cbd7ea';
+
+// Detect color scheme
+const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)';
+const tickColor = isDark ? '#cbd7ea' : '#3a4560';
+const inkColor  = isDark ? '#f5f7fb' : '#0d0d0d';
+Chart.defaults.color = tickColor;
 
 const accent  = '#c8501a';
-const accent2 = '#1a5c8a';
-const accent3 = '#2d7a45';
-const purple  = '#7b4fa8';
-const mid     = '#9dafc8';
+const accent2 = isDark ? '#6bb7ff' : '#1a5c8a';
+const accent3 = isDark ? '#59d38c' : '#2d7a45';
+const purple  = isDark ? '#c58cff' : '#7b4fa8';
+const mid     = isDark ? '#9dafc8' : '#6b7a96';
 
 // ── Chart 1: Multi-use-case value curve ──
 new Chart(document.getElementById('chartValueCurve'), {
@@ -2027,8 +2458,8 @@ new Chart(document.getElementById('chartValueCurve'), {
   options: {
     responsive: true, maintainAspectRatio: false,
     scales: {
-      x: { title: { display: true, text: 'Number of Use Cases', color: mid, font:{size:10} }, grid:{color:'rgba(255,255,255,0.08)'} },
-      y: { title: { display: true, text: 'Total $k', color: accent, font:{size:10} }, grid:{color:'rgba(255,255,255,0.08)'}, ticks:{color:accent} },
+      x: { title: { display: true, text: 'Number of Use Cases', color: mid, font:{size:10} }, grid:{color:gridColor} },
+      y: { title: { display: true, text: 'Total $k', color: accent, font:{size:10} }, grid:{color:gridColor}, ticks:{color:accent} },
       y2: { position:'right', title: { display: true, text: 'Per-UC Cost $k', color: accent2, font:{size:10} }, grid:{drawOnChartArea:false}, ticks:{color:accent2} }
     },
     plugins: { legend: { position:'bottom' } }
@@ -2051,7 +2482,7 @@ new Chart(document.getElementById('chartDeployComplexity'), {
     responsive: true, maintainAspectRatio: false,
     indexAxis: 'y',
     scales: {
-      x: { max: 100, grid:{color:'rgba(255,255,255,0.08)'}, title:{display:true, text:'Relative Complexity', font:{size:10}, color:mid} },
+      x: { max: 100, grid:{color:gridColor}, title:{display:true, text:'Relative Complexity', font:{size:10}, color:mid} },
       y: { grid:{display:false}, ticks:{font:{size:10}} }
     },
     plugins: { legend:{display:false} }
@@ -2067,7 +2498,7 @@ new Chart(document.getElementById('chartIntMix'), {
       data: [30, 25, 15, 20, 10],
       backgroundColor: [accent2, '#4a9a30', '#e09020', purple, accent],
       borderWidth: 2,
-      borderColor: 'rgba(7,17,31,0.92)'
+      borderColor: isDark ? 'rgba(7,17,31,0.92)' : 'rgba(245,242,236,0.95)'
     }]
   },
   options: {
@@ -2096,7 +2527,7 @@ new Chart(document.getElementById('chartPhaseEffort'), {
   options: {
     responsive: true, maintainAspectRatio: false,
     scales: {
-      y: { max: 70, title:{display:true, text:'% of Total Effort', font:{size:10}, color:mid}, grid:{color:'rgba(255,255,255,0.08)'} },
+      y: { max: 70, title:{display:true, text:'% of Total Effort', font:{size:10}, color:mid}, grid:{color:gridColor} },
       x: { grid:{display:false} }
     },
     plugins: { legend: { position:'bottom' } }
@@ -2128,7 +2559,7 @@ new Chart(document.getElementById('chartUseCasePrice'), {
   options: {
     responsive: true, maintainAspectRatio: false,
     scales: {
-      y: { grid:{color:'rgba(255,255,255,0.08)'}, title:{display:true, text:'Incremental $k', font:{size:10}, color:mid} },
+      y: { grid:{color:gridColor}, title:{display:true, text:'Incremental $k', font:{size:10}, color:mid} },
       y2: { position:'right', grid:{drawOnChartArea:false}, title:{display:true, text:'Cumulative $k', font:{size:10}, color:'#e09020'}, ticks:{color:'#e09020'} }
     },
     plugins: { legend: { position:'bottom' } }
@@ -2151,7 +2582,7 @@ new Chart(document.getElementById('chartTimeline'), {
     responsive: true, maintainAspectRatio: false,
     indexAxis: 'y',
     scales: {
-      x: { max: 12, grid:{color:'rgba(255,255,255,0.08)'}, title:{display:true, text:'Weeks', font:{size:10}, color:mid} },
+      x: { max: 12, grid:{color:gridColor}, title:{display:true, text:'Weeks', font:{size:10}, color:mid} },
       y: { grid:{display:false} }
     },
     plugins: { legend:{display:false} }
@@ -2183,8 +2614,8 @@ new Chart(document.getElementById('chartTrainingROI'), {
       r: {
         min: 0, max: 100,
         ticks: { display: false },
-        grid: { color: 'rgba(255,255,255,0.10)' },
-        pointLabels: { font:{size:10}, color: ink }
+        grid: { color: gridColor },
+        pointLabels: { font:{size:10}, color: inkColor }
       }
     },
     plugins: { legend: { position:'bottom' } }
