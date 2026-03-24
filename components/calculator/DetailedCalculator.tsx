@@ -186,7 +186,7 @@ export default function DetailedCalculator({ inputs, onChange }: DetailedCalcula
       <section>
         {sectionHeader('Deployment Type')}
         <Select
-          label="Deployment Type"
+          label=""
           value={inputs.deployment}
           options={DEPLOYMENT_SELECT_OPTIONS}
           onChange={(e) =>

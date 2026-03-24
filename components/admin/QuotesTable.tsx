@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react'
 import Badge from '@/components/ui/Badge'
-import type { Quote, DetailedInputs, SimpleInputs } from '@/lib/types'
+import QuoteDetail from '@/components/quotes/QuoteDetail'
+import type { Quote } from '@/lib/types'
 import { formatPrice } from '@/lib/pricing-engine'
 
 interface QuotesTableProps {
@@ -15,49 +16,6 @@ function formatDate(dateStr: string) {
     month: 'short',
     year: 'numeric',
   })
-}
-
-function InputBreakdown({ inputs, mode }: { inputs: DetailedInputs | SimpleInputs; mode: string }) {
-  if (mode === 'detailed') {
-    const d = inputs as DetailedInputs
-    const grid = d.integrations
-    const totalIntegrations =
-      grid.restLibrary + grid.restModification + grid.restNew +
-      grid.soapLibrary + grid.soapModification + grid.soapNew +
-      grid.dbLibrary   + grid.dbModification   + grid.dbNew
-
-    return (
-      <div className="grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-4 text-xs text-gray-600 bg-gray-50 rounded-lg p-3 mt-1">
-        <div><span className="text-gray-400 block">Tier 1</span><span className="font-medium text-gray-800">{d.tier1UseCases} use cases</span></div>
-        <div><span className="text-gray-400 block">Tier 2</span><span className="font-medium text-gray-800">{d.tier2UseCases} use cases</span></div>
-        <div><span className="text-gray-400 block">Integrations</span><span className="font-medium text-gray-800">{totalIntegrations} total</span></div>
-        <div><span className="text-gray-400 block">Complexity</span><span className="font-medium text-gray-800">{Math.round(d.complexityFactor * 100)}%</span></div>
-        <div className="col-span-2 sm:col-span-2"><span className="text-gray-400 block">Deployment</span><span className="font-medium text-gray-800">{d.deployment}</span></div>
-        <div><span className="text-gray-400 block">Training</span><span className="font-medium text-gray-800">{d.training ? 'Yes' : 'No'}</span></div>
-        <div className="col-span-2 sm:col-span-4 border-t border-gray-200 pt-2 mt-1">
-          <span className="text-gray-400 block mb-1">Integration grid (Type × Status × Auth)</span>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-1">
-            <div className="text-gray-700">REST/JSON — L:{grid.restLibrary} M:{grid.restModification} N:{grid.restNew} · <span className="text-gray-400">{grid.restAuth}</span></div>
-            <div className="text-gray-700">SOAP/XML — L:{grid.soapLibrary} M:{grid.soapModification} N:{grid.soapNew} · <span className="text-gray-400">{grid.soapAuth}</span></div>
-            <div className="text-gray-700">DB/Prop — L:{grid.dbLibrary} M:{grid.dbModification} N:{grid.dbNew} · <span className="text-gray-400">{grid.dbAuth}</span></div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  const s = inputs as SimpleInputs
-  return (
-    <div className="grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-4 text-xs text-gray-600 bg-gray-50 rounded-lg p-3 mt-1">
-      <div><span className="text-gray-400 block">Tier 1</span><span className="font-medium text-gray-800">{s.tier1UseCases} use cases</span></div>
-      <div><span className="text-gray-400 block">Tier 2</span><span className="font-medium text-gray-800">{s.tier2UseCases} use cases</span></div>
-      <div><span className="text-gray-400 block">Standard APIs</span><span className="font-medium text-gray-800">{s.standardApiIntegrations}</span></div>
-      <div><span className="text-gray-400 block">Custom Integrations</span><span className="font-medium text-gray-800">{s.customIntegrations}</span></div>
-      <div className="col-span-2"><span className="text-gray-400 block">Deployment</span><span className="font-medium text-gray-800">{s.deployment}</span></div>
-      <div><span className="text-gray-400 block">Training</span><span className="font-medium text-gray-800">{s.training ? 'Yes' : 'No'}</span></div>
-      <div><span className="text-gray-400 block">Complexity</span><span className="font-medium text-gray-800">{Math.round(s.complexityFactor * 100)}%</span></div>
-    </div>
-  )
 }
 
 export default function QuotesTable({ quotes }: QuotesTableProps) {
@@ -143,13 +101,8 @@ export default function QuotesTable({ quotes }: QuotesTableProps) {
               </tr>
               {expanded.has(quote.id) && (
                 <tr className="bg-gray-50/40">
-                  <td colSpan={6} className="px-4 pb-3">
-                    <InputBreakdown inputs={quote.inputs} mode={quote.calculatorMode} />
-                    {quote.notes && (
-                      <p className="mt-2 text-xs text-gray-400 italic pl-1">
-                        Notes: {quote.notes}
-                      </p>
-                    )}
+                  <td colSpan={6} className="px-4 py-4">
+                    <QuoteDetail quote={quote} />
                   </td>
                 </tr>
               )}

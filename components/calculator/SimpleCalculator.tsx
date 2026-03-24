@@ -90,7 +90,7 @@ export default function SimpleCalculator({ inputs, onChange }: SimpleCalculatorP
       <section>
         {sectionHeader('Deployment Type')}
         <Select
-          label="Deployment Type"
+          label=""
           value={inputs.deployment}
           options={DEPLOYMENT_SELECT_OPTIONS}
           onChange={(e) =>

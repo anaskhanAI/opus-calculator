@@ -1,7 +1,7 @@
 'use client'
 
 import type { CalculatorOutputs } from '@/lib/types'
-import { formatPrice, formatWeeks, formatFte } from '@/lib/pricing-engine'
+import { formatPrice, formatWeeks } from '@/lib/pricing-engine'
 
 interface SummaryPanelProps {
   outputs: CalculatorOutputs
@@ -26,16 +26,13 @@ export default function SummaryPanel({ outputs }: SummaryPanelProps) {
         <table className="w-full text-xs">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50/60">
-              <th className="py-2 pl-4 pr-2 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider w-[42%]">
+              <th className="py-2 pl-4 pr-2 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider w-[50%]">
               </th>
               <th className="py-2 px-2 text-right text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
                 Price
               </th>
-              <th className="py-2 px-2 text-right text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
-                Effort (wks)
-              </th>
               <th className="py-2 pl-2 pr-4 text-right text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
-                FTE
+                Effort (wks)
               </th>
             </tr>
           </thead>
@@ -51,11 +48,8 @@ export default function SummaryPanel({ outputs }: SummaryPanelProps) {
                   <td className="py-2 px-2 text-right tabular-nums">
                     {formatPrice(item.listPrice)}
                   </td>
-                  <td className="py-2 px-2 text-right tabular-nums">
-                    {formatWeeks(item.weeks)}
-                  </td>
                   <td className="py-2 pl-2 pr-4 text-right tabular-nums">
-                    {formatFte(item.fte)}
+                    {formatWeeks(item.weeks)}
                   </td>
                 </tr>
               )
@@ -69,10 +63,9 @@ export default function SummaryPanel({ outputs }: SummaryPanelProps) {
               <td className="py-3 px-2 text-right font-bold text-indigo-700 tabular-nums text-xs">
                 {formatPrice(outputs.projectTotal.listPrice)}
               </td>
-              <td className="py-3 px-2 text-right font-semibold text-gray-700 tabular-nums text-xs">
+              <td className="py-3 pl-2 pr-4 text-right font-semibold text-gray-700 tabular-nums text-xs">
                 {formatWeeks(outputs.projectTotal.weeks)}
               </td>
-              <td className="py-3 pl-2 pr-4 text-right text-gray-300 text-xs">—</td>
             </tr>
           </tfoot>
         </table>

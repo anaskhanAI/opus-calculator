@@ -27,6 +27,12 @@ async function NavBar() {
             </Link>
             <div className="hidden sm:flex items-center gap-1">
               <Link
+                href="/calculator/pricing-guide"
+                className="px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
+              >
+                Pricing Guide
+              </Link>
+              <Link
                 href="/calculator"
                 className="px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
               >
@@ -37,12 +43,6 @@ async function NavBar() {
                 className="px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
               >
                 My Quotes
-              </Link>
-              <Link
-                href="/calculator/pricing-guide"
-                className="px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
-              >
-                Pricing Guide
               </Link>
               {isAdmin && (
                 <Link
