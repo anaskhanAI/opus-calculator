@@ -54,11 +54,11 @@ const DEPLOYMENT_PRICING: Record<
 > = {
   'Multi Tenant - Opus Cloud - AWS':                    { price: 0,           weeks: 0 },
   'Multi Tenant - Opus Cloud - Azure':                  { price: 0,           weeks: 0 },
-  'Single Tenant - Opus Cloud - AWS':                   { price: 100000,      weeks: 2 },
-  'Single Tenant - Opus Cloud - Azure':                 { price: 100000,      weeks: 2 },
-  'Single Tenant - Client Cloud - AWS':                 { price: 150000,      weeks: 3 },
-  'Single Tenant - Client Cloud - Azure':               { price: 150000,      weeks: 3 },
-  'Single Tenant - UAE Core42 Sovereign Cloud - Azure': { price: 150000,      weeks: 3 },
+  'Single Tenant - Opus Cloud - AWS':                   { price: 70000,       weeks: 2 },
+  'Single Tenant - Opus Cloud - Azure':                 { price: 70000,       weeks: 2 },
+  'Single Tenant - Client Cloud - AWS':                 { price: 110000,      weeks: 3 },
+  'Single Tenant - Client Cloud - Azure':               { price: 110000,      weeks: 3 },
+  'Single Tenant - UAE Core42 Sovereign Cloud - Azure': { price: 110000,      weeks: 3 },
   'Single Tenant - Client On Premise':                  { price: 'On Demand', weeks: 'On Demand' },
 }
 
