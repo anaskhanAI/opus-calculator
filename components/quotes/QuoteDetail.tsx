@@ -7,6 +7,7 @@ import { formatPrice } from '@/lib/pricing-engine'
 
 interface QuoteDetailProps {
   quote: Quote
+  isAdmin?: boolean
 }
 
 function formatDate(dateStr: string) {
@@ -106,7 +107,7 @@ function SimpleInputsView({ inputs }: { inputs: SimpleInputs }) {
   )
 }
 
-export default function QuoteDetail({ quote }: QuoteDetailProps) {
+export default function QuoteDetail({ quote, isAdmin = false }: QuoteDetailProps) {
   return (
     <div className="space-y-4">
       {/* Header card */}
@@ -170,6 +171,7 @@ export default function QuoteDetail({ quote }: QuoteDetailProps) {
         <SummaryPanel
           outputs={quote.outputs}
           discount={(quote.inputs as DetailedInputs).requestedDiscount ?? 0}
+          showDetail={isAdmin}
         />
       </div>
     </div>

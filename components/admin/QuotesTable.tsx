@@ -102,7 +102,7 @@ export default function QuotesTable({ quotes }: QuotesTableProps) {
               {expanded.has(quote.id) && (
                 <tr className="bg-gray-50/40">
                   <td colSpan={6} className="px-4 py-4">
-                    <QuoteDetail quote={quote} />
+                    <QuoteDetail quote={quote} isAdmin />
                   </td>
                 </tr>
               )}
