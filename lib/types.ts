@@ -1,7 +1,7 @@
 export type CalculatorMode = 'detailed' | 'simple'
 
 export type DeploymentType =
-  | 'Multi Tenant - Opus Cloud - AWS'
+  | 'Multi Tenant - Opus Cloud - (For POVs only)'
   | 'Multi Tenant - Opus Cloud - Azure'
   | 'Single Tenant - Opus Cloud - AWS'
   | 'Single Tenant - Opus Cloud - Azure'

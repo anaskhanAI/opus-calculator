@@ -52,7 +52,7 @@ const DEPLOYMENT_PRICING: Record<
   DeploymentType,
   { price: number | 'On Demand'; weeks: number | 'On Demand' }
 > = {
-  'Multi Tenant - Opus Cloud - AWS':                    { price: 0,           weeks: 0 },
+  'Multi Tenant - Opus Cloud - (For POVs only)':        { price: 0,           weeks: 0 },
   'Multi Tenant - Opus Cloud - Azure':                  { price: 0,           weeks: 0 },
   'Single Tenant - Opus Cloud - AWS':                   { price: 70000,       weeks: 2 },
   'Single Tenant - Opus Cloud - Azure':                 { price: 70000,       weeks: 2 },
@@ -459,7 +459,7 @@ export const DEFAULT_DEPLOYMENT: import('./types').DeploymentType =
   'Single Tenant - Opus Cloud - AWS'
 
 export const DEPLOYMENT_OPTIONS: import('./types').DeploymentType[] = [
-  'Multi Tenant - Opus Cloud - AWS',
+  'Multi Tenant - Opus Cloud - (For POVs only)',
   'Single Tenant - Opus Cloud - AWS',
   'Single Tenant - Opus Cloud - Azure',
   'Single Tenant - Client Cloud - AWS',
