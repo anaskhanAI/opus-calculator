@@ -113,6 +113,31 @@ create index if not exists quotes_seller_id_idx   on public.quotes(seller_id);
 create index if not exists quotes_created_at_idx  on public.quotes(created_at desc);
 create index if not exists quotes_status_idx      on public.quotes(status);
 
+-- ─── PRICING GUIDE CONFIG ─────────────────────────────────────────────────────
+-- Single-row table that stores the current pricing guide HTML content.
+-- Admins upload a new HTML file from within the app and all users see it instantly.
+-- The API route at POST /api/pricing-guide patches the HTML for light-mode and upserts here.
+create table if not exists public.pricing_guide_config (
+  id           int primary key default 1,
+  html_content text not null default '',
+  updated_at   timestamptz default now(),
+  updated_by   text
+);
+
+alter table public.pricing_guide_config enable row level security;
+
+-- Any authenticated user can read (the API route also uses service role, but this
+-- allows future direct reads if needed)
+drop policy if exists "Authenticated can read pricing guide config" on public.pricing_guide_config;
+create policy "Authenticated can read pricing guide config"
+  on public.pricing_guide_config for select
+  using (auth.role() = 'authenticated');
+
+-- Seed the single config row (safe to re-run)
+insert into public.pricing_guide_config (id, html_content, updated_by)
+values (1, '', 'system')
+on conflict (id) do nothing;
+
 -- ─── GRANT ADMIN ACCESS ───────────────────────────────────────────────────────
 -- After running this script, elevate a user to admin by running:
 --

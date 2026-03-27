@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { createServiceClient } from '@/lib/supabase/server'
 import AdminDashboardClient from './AdminDashboardClient'
+import PricingGuideUpload from './PricingGuideUpload'
 import type { Quote } from '@/lib/types'
 
 function mapRow(row: Record<string, unknown>): Quote {
@@ -56,6 +57,7 @@ export default async function AdminPage() {
         <p className="text-xs text-gray-500">All quotes across all sellers</p>
       </div>
 
+      <PricingGuideUpload />
       <AdminDashboardClient initialQuotes={quotes} />
     </div>
   )
