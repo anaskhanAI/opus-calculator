@@ -15,7 +15,6 @@ import type {
   DeploymentType,
   PricingConfig,
   WeekLookupRow,
-  Tier2LookupRow,
   DeploymentOption,
 } from './types'
 
