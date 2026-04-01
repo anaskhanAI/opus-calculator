@@ -138,6 +138,32 @@ insert into public.pricing_guide_config (id, html_content, updated_by)
 values (1, '', 'system')
 on conflict (id) do nothing;
 
+-- ─── PRICING CONFIG ───────────────────────────────────────────────────────────
+-- Single-row table that stores all calculator pricing constants as JSONB.
+-- Follows the same pattern as pricing_guide_config (id=1, upsert-on-save).
+-- If the row is missing, pricing-engine.ts falls back to DEFAULT_PRICING_CONFIG.
+create table if not exists public.pricing_config (
+  id         int primary key default 1,
+  config     jsonb not null default '{}',
+  updated_at timestamptz default now(),
+  updated_by text
+);
+
+alter table public.pricing_config enable row level security;
+
+-- Any authenticated user can read (calculator fetches this client-side via anon key)
+drop policy if exists "Authenticated can read pricing config" on public.pricing_config;
+create policy "Authenticated can read pricing config"
+  on public.pricing_config for select
+  using (auth.role() = 'authenticated');
+
+-- Writes are done server-side via the service role key — no insert/update policy needed.
+
+-- Seed the single config row (safe to re-run; does not overwrite existing config)
+insert into public.pricing_config (id, config, updated_by)
+values (1, '{}', 'system')
+on conflict (id) do nothing;
+
 -- ─── GRANT ADMIN ACCESS ───────────────────────────────────────────────────────
 -- After running this script, elevate a user to admin by running:
 --

@@ -122,3 +122,55 @@ export interface QuoteFilters {
   minPrice?: number
   maxPrice?: number
 }
+
+// ─── PRICING CONFIG ───────────────────────────────────────────────────────────
+// Mirrors all constants in pricing-engine.ts. Stored as JSONB in the
+// pricing_config Supabase table (id=1). Falls back to DEFAULT_PRICING_CONFIG
+// when the DB row is absent or a field is missing.
+
+export interface DeploymentOption {
+  name: DeploymentType
+  price: number | 'On Demand'
+  weeks: number | 'On Demand'
+}
+
+export interface WeekLookupRow {
+  count: number
+  tier1: number
+  tier2: number
+}
+
+export interface Tier2LookupRow {
+  count: number
+  weeks: number
+}
+
+export interface PricingConfig {
+  // General rates
+  dayRate: number                   // DAY_RATE = $125/hr
+  // Headcount
+  coreHeadcount: number             // R7 = 3 (without integrations)
+  intHeadcount: number              // S7 = 3 (with integrations)
+  workingDaysPerWeek: number        // S9 = 5
+  integrationFte: number            // fixed 2 FTE for integration line item
+  deploymentHoursPerWeek: number    // 60 hrs/week (40 + 20 overhead)
+  // Training
+  trainingListPrice: number         // $20,000
+  trainingWeeks: number             // 1 week
+  // Integration weights (detailed calculator)
+  w3BaseWeight: number              // W3 = 2.5
+  w4Rest: number                    // W4 = 1.0 (REST/JSON type weight)
+  w5Soap: number                    // W5 = 1.5 (SOAP/XML type weight)
+  w6Db: number                      // W6 = 2.5 (Database/Proprietary type weight)
+  w7Library: number                 // W7 = 0.2 (Existing Library status weight)
+  w8Modification: number            // W8 = 1.5 (Modification status weight)
+  w9New: number                     // W9 = 3.0 (New Integration status weight)
+  // Simple integration bases
+  m28StandardBase: number           // M28 = 1 (standard API base weeks)
+  o28CustomBase: number             // O28 = 4 (custom build base weeks)
+  // Deployment options
+  deploymentOptions: DeploymentOption[]
+  // Week lookup tables
+  weekLookupTable: WeekLookupRow[]
+  tier2Lookup: Tier2LookupRow[]
+}
