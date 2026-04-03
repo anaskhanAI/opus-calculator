@@ -411,7 +411,7 @@ export function formatPrice(value: number | 'On Demand'): string {
 
 export function formatWeeks(value: number | 'On Demand'): string {
   if (value === 'On Demand') return 'On Demand'
-  return Math.ceil(value).toString()
+  return Math.round(value).toString()
 }
 
 export function formatHours(value: number | 'On Demand'): string {
