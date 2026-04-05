@@ -123,6 +123,83 @@ export interface QuoteFilters {
   maxPrice?: number
 }
 
+// ─── GM CALCULATOR ────────────────────────────────────────────────────────────
+
+export type GmSignal = 'SAFE' | 'REVIEW' | 'APPROVAL' | 'ESCALATE'
+
+export interface GmRole {
+  role: string
+  days: number
+  dailyCost: number
+  standardRate: number
+}
+
+export interface GmConfig {
+  targetGm: number          // percentage, e.g. 50 = 50%
+  reviewBand: number        // points below target → REVIEW zone
+  approvalBand: number      // points below target → APPROVAL zone
+  defaultRoles: GmRole[]
+}
+
+export interface GmInputs {
+  roles: GmRole[]
+  discountType: 'Percent' | 'Amount'
+  discountPercent: number   // e.g. 15 = 15%
+  discountAmount: number    // absolute $ value
+  targetGm: number
+  reviewBand: number
+  approvalBand: number
+}
+
+export interface GmRoleResult extends GmRole {
+  standardRevenue: number
+  effortPct: number
+  discount: number
+  discountedRevenue: number
+  cost: number
+  gmPct: number             // as decimal, e.g. 0.48
+  inputGmPct: number        // list-price GM before discount
+  minRev: number            // min revenue to hit target GM
+}
+
+export interface GmScenario {
+  name: string
+  revenue: number
+  gm: number
+  discount: number
+  signal: GmSignal
+}
+
+export interface GmOutputs {
+  totalDays: number
+  totalStandardRevenue: number
+  totalDiscountedRevenue: number
+  activeDiscount: number
+  totalCost: number
+  grossProfit: number
+  actualGm: number          // as decimal
+  minPriceAtTarget: number
+  maxDiscountAllowed: number
+  remainingHeadroom: number
+  signal: GmSignal
+  roles: GmRoleResult[]
+  scenarios: GmScenario[]
+  adjustmentHint: string
+}
+
+export interface GmSavedScenario {
+  id: string
+  quoteId: string | null
+  quoteRef: string | null
+  clientName: string | null
+  projectName: string | null
+  inputs: GmInputs
+  outputs: GmOutputs
+  notes: string | null
+  createdAt: string
+  createdBy: string | null
+}
+
 // ─── PRICING CONFIG ───────────────────────────────────────────────────────────
 // Mirrors all constants in pricing-engine.ts. Stored as JSONB in the
 // pricing_config Supabase table (id=1). Falls back to DEFAULT_PRICING_CONFIG

@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GM Discount Calculator</title>
+  <style>
+    :root{
+      --text:#0f172a;
+      --muted:#64748b;
+      --line:#dbe3ef;
+      --brand:#2563eb;
+      --brand-2:#1d4ed8;
+      --surface:#ffffff;
+      --surface-2:#f8fafc;
+      --surface-3:#eff6ff;
+      --safe:#166534;
+      --review:#92400e;
+      --approval:#9a3412;
+      --escalate:#991b1b;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:linear-gradient(180deg,#0b1020 0%, #0f172a 100%);
+      color:#e2e8f0;
+    }
+    .shell{
+      width:min(1420px, calc(100% - 32px));
+      margin:20px auto 40px;
+    }
+    .hero{
+      background:
+        radial-gradient(circle at top right, rgba(96,165,250,.22), transparent 30%),
+        linear-gradient(135deg, rgba(37,99,235,.22), rgba(59,130,246,.08));
+      border:1px solid rgba(148,163,184,.18);
+      border-radius:22px;
+      padding:18px 20px;
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:16px;
+      box-shadow:0 20px 60px rgba(2,6,23,.32);
+    }
+    .hero h1{
+      margin:0 0 8px;
+      font-size:clamp(24px,3vw,32px);
+      line-height:1.05;
+      letter-spacing:-0.03em;
+    }
+    .hero p{
+      margin:0;
+      color:#cbd5e1;
+      line-height:1.6;
+      font-size:14px;
+      max-width:720px;
+    }
+    .hero-actions{
+      margin-top:12px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+    .hero-chip{
+      display:inline-flex;
+      align-items:center;
+      border-radius:999px;
+      padding:8px 12px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.10);
+      color:#e2e8f0;
+      font-size:12px;
+      font-weight:600;
+    }
+    .hero .meta{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      align-content:start;
+    }
+    .pill-card{
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:16px;
+      padding:12px 14px;
+    }
+    .pill-card .k{
+      color:#93c5fd;
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:6px;
+    }
+    .pill-card .v{
+      font-size:15px;
+      font-weight:700;
+      color:white;
+      line-height:1.25;
+    }
+
+    .workspace{
+      margin-top:18px;
+      display:grid;
+      grid-template-columns:390px 1fr;
+      gap:18px;
+      align-items:start;
+    }
+    .panel{
+      background:#fff;
+      color:var(--text);
+      border-radius:22px;
+      box-shadow:0 18px 50px rgba(2,6,23,.25);
+      overflow:hidden;
+    }
+    .panel-header{
+      padding:16px 20px;
+      border-bottom:1px solid var(--line);
+      background:linear-gradient(180deg,#ffffff 0%,#f8fafc 100%);
+    }
+    .panel-header h2{
+      margin:0;
+      font-size:18px;
+      letter-spacing:-.02em;
+    }
+    .panel-body{ padding:18px 20px 20px; }
+
+    .subsection{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:14px;
+      background:linear-gradient(180deg,#fff 0%,#f8fafc 100%);
+    }
+    .subsection + .subsection{ margin-top:14px; }
+    .section-kicker{
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-weight:700;
+      color:#64748b;
+      margin-bottom:8px;
+    }
+    .section-copy{
+      margin:0 0 12px;
+      color:#64748b;
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    .field{ margin-bottom:14px; }
+    .field:last-child{ margin-bottom:0; }
+    .field label{
+      display:block;
+      font-size:13px;
+      color:#334155;
+      margin-bottom:6px;
+      font-weight:600;
+    }
+    .field small{ display:block; color:var(--muted); margin-top:5px; line-height:1.4; }
+
+    .input-prefix{ position:relative; }
+    .input-prefix span{
+      position:absolute;
+      left:12px;
+      top:50%;
+      transform:translateY(-50%);
+      color:#64748b;
+      font-weight:600;
+      pointer-events:none;
+    }
+    .input-prefix input,
+    .input-prefix .editable{
+      padding-left:28px;
+    }
+
+    input, button{ font:inherit; }
+    input{
+      width:100%;
+      border:1px solid #bfdbfe;
+      border-radius:12px;
+      padding:12px;
+      background:var(--surface-3);
+      color:#0f172a;
+      outline:none;
+      transition:.16s ease;
+    }
+    input:focus{
+      border-color:#60a5fa;
+      box-shadow:0 0 0 4px rgba(96,165,250,.18);
+      background:#fff;
+    }
+    .editable{
+      width:100%;
+      min-width:40px;
+      border:1px solid #bfdbfe;
+      border-radius:10px;
+      padding:10px;
+      background:var(--surface-3);
+    }
+    .role-name{ min-width:150px; max-width:150px; }
+    /* Days input: wide enough for 3-digit numbers */
+    .days-input{ min-width:68px; max-width:68px; }
+
+    .row-2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+    .discount-input-row.single{
+      grid-template-columns:1fr;
+      margin-bottom:14px;
+    }
+
+    .toggle-group{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+    }
+    .toggle-btn{
+      border:1px solid #bfdbfe;
+      border-radius:12px;
+      padding:12px 14px;
+      background:var(--surface-3);
+      color:#334155;
+      font-weight:700;
+      cursor:pointer;
+      transition:.16s ease;
+    }
+    .toggle-btn.active{
+      background:linear-gradient(180deg,#2563eb 0%, #1d4ed8 100%);
+      border-color:#2563eb;
+      color:#fff;
+      box-shadow:0 8px 18px rgba(37,99,235,.24);
+    }
+    .is-hidden{ display:none; }
+
+    .subtle-note{
+      margin-top:14px;
+      background:#f8fafc;
+      border:1px dashed #cbd5e1;
+      color:#475569;
+      border-radius:16px;
+      padding:12px 14px;
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    .table-shell{
+      border:1px solid #cbd5e1;
+      border-radius:18px;
+      overflow:auto;
+      box-shadow:0 8px 22px rgba(15,23,42,.05);
+      background:#fff;
+    }
+
+    .controls-toolbar,
+    .summary-toolbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+    .summary-toolbar{
+      justify-content:flex-end;
+      margin-top:0;
+      margin-bottom:14px;
+    }
+
+    .summary-grid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:14px;
+      margin-bottom:18px;
+    }
+    .stat{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:16px;
+      background:linear-gradient(180deg,#fff 0%,#f8fafc 100%);
+      text-align:center;
+      box-shadow:0 8px 20px rgba(15,23,42,.04);
+    }
+    .stat.highlight{
+      background:linear-gradient(180deg,#eff6ff 0%,#ffffff 100%);
+      border-color:#bfdbfe;
+    }
+    .stat .label{
+      color:var(--muted);
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.07em;
+      margin-bottom:8px;
+    }
+    .stat .value{
+      font-size:28px;
+      letter-spacing:-.03em;
+      font-weight:800;
+      color:#0f172a;
+    }
+    .stat .sub{
+      margin-top:8px;
+      color:#475569;
+      font-size:12px;
+      line-height:1.5;
+    }
+
+    .gm-safe{ color:var(--safe) !important; }
+    .gm-review{ color:var(--review) !important; }
+    .gm-approval{ color:var(--approval) !important; }
+    .gm-escalate{ color:var(--escalate) !important; }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      border-radius:999px;
+      padding:9px 14px;
+      font-weight:700;
+      font-size:13px;
+      border:1px solid transparent;
+    }
+    .SAFE{ background:#ecfdf5; color:var(--safe); border-color:#bbf7d0; font-size:11px;}
+    .REVIEW{ background:#fffbeb; color:var(--review); border-color:#fde68a;}
+    .APPROVAL{ background:#fff7ed; color:var(--approval); border-color:#fdba74;}
+    .ESCALATE{ background:#fef2f2; color:var(--escalate); border-color:#fecaca; font-size:11px;}
+
+    .btn{
+      border:0;
+      border-radius:12px;
+      padding:11px 14px;
+      font-weight:700;
+      cursor:pointer;
+      transition:.16s ease;
+    }
+    .btn-primary{ background:linear-gradient(180deg,#2563eb 0%, #1d4ed8 100%); color:#fff; }
+    .btn-primary:hover{ filter:brightness(.96); }
+    .btn-secondary{ background:#e2e8f0; color:#0f172a; }
+    .btn-ghost{ background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
+    .btn-danger{ background:#fee2e2; color:#991b1b; padding:9px 10px; }
+
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+    }
+    thead th{
+      background:#f8fafc;
+      color:#334155;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      padding:12px 10px;
+      text-align:center;
+      border-bottom:1px solid var(--line);
+      white-space:nowrap;
+    }
+    tbody td, tfoot td{
+      border-bottom:1px solid #eef2f7;
+      padding:10px;
+      vertical-align:middle;
+      font-size:14px;
+    }
+    tbody tr:last-child td{ border-bottom:none; }
+    .number{
+      text-align:right;
+      font-variant-numeric: tabular-nums;
+      font-family:ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .computed{
+      color:#0f172a;
+      font-weight:600;
+      white-space:nowrap;
+      text-align:right;
+      font-variant-numeric: tabular-nums;
+      font-family:ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .muted{ color:var(--muted); }
+
+    .input-table th:nth-child(1){min-width:150px;}
+    .input-table th:nth-child(2){min-width:70px;}
+    .input-table th:nth-child(3),
+    .input-table th:nth-child(4){min-width:100px;}
+    .input-table th:nth-child(5){min-width:48px;}
+    .input-table{min-width:560px;}
+    .input-table tfoot td{
+      position:sticky;
+      bottom:0;
+      background:#f8fafc;
+      font-weight:800;
+      box-shadow:0 -1px 0 #dbe3ef;
+      z-index:2;
+    }
+    .gm-cell{
+      font-weight:800;
+      text-align:right;
+      font-variant-numeric: tabular-nums;
+      font-family:ui-monospace, SFMono-Regular, Menlo, monospace;
+      white-space:nowrap;
+    }
+    .row-gm-safe{ background:rgba(22,101,52,.06); }
+    .row-gm-review{ background:rgba(146,64,14,.08); }
+    .row-gm-low{ background:rgba(153,27,27,.08); }
+
+    .insight-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+      margin-bottom:18px;
+    }
+    .mini-card, .scenario-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:linear-gradient(180deg,#fff 0%,#f8fafc 100%);
+      padding:16px;
+      box-shadow:0 8px 20px rgba(15,23,42,.04);
+    }
+    .mini-card h3, .scenario-card h3{
+      margin:0 0 6px;
+      font-size:15px;
+      letter-spacing:-.01em;
+    }
+    .mini-card p{
+      margin:0 0 12px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    .range-target{
+      position:absolute;
+      top:-6px;
+      width:10px;
+      height:22px;
+      background:#2563eb;
+      border-radius:999px;
+      box-shadow:0 0 0 3px rgba(37,99,235,.18);
+      transform:translateX(-50%);
+      z-index:1;
+      opacity:.9;
+    }
+    .range-target-label{
+      margin-top:8px;
+      font-size:12px;
+      font-weight:700;
+      color:#1d4ed8;
+      text-align:right;
+    }
+    .range-track{
+      position:relative;
+      height:14px;
+      border-radius:999px;
+      overflow:hidden;
+      background:linear-gradient(90deg, #fecaca 0 20%, #fdba74 20% 30%, #fde68a 30% 40%, #bbf7d0 40% 100%);
+      border:1px solid #e2e8f0;
+    }
+    .range-marker{
+      position:absolute;
+      top:-4px;
+      width:3px;
+      height:20px;
+      background:#0f172a;
+      border-radius:999px;
+      box-shadow:0 0 0 2px rgba(255,255,255,.9);
+      transform:translateX(-50%);
+    }
+    .range-labels{
+      margin-top:8px;
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      font-size:11px;
+      color:var(--muted);
+    }
+    .headroom-stats{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .headroom-box{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+      background:#fff;
+    }
+    .headroom-box .k{
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.07em;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+    .headroom-box .v{
+      font-size:20px;
+      font-weight:800;
+      color:#0f172a;
+      letter-spacing:-.02em;
+    }
+
+    .scenario-wrap{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 260px;
+      gap:14px;
+      margin-top:18px;
+      align-items:start;
+    }
+    .legend{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+    }
+    .legend .item{
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:#f8fafc;
+      font-size:13px;
+      color:#334155;
+      line-height:1.5;
+    }
+    .bar{
+      margin-top:8px;
+      height:10px;
+      background:#e2e8f0;
+      border-radius:999px;
+      overflow:hidden;
+    }
+    .bar > span{
+      display:block;
+      height:100%;
+      border-radius:999px;
+      background:linear-gradient(90deg,#60a5fa,#2563eb);
+      width:0%;
+    }
+    .scenario-table{
+      min-width:0;
+      width:100%;
+      table-layout:fixed;
+    }
+    .scenario-card .table-shell{
+      overflow:visible;
+    }
+    .scenario-table th,
+    .scenario-table td{
+      font-size:12px;
+      padding:8px 6px;
+    }
+    .scenario-table th:nth-child(2),
+    .scenario-table th:nth-child(3),
+    .scenario-table th:nth-child(4){width:70px;}
+    .scenario-table th:nth-child(5){width:100px;}
+    .scenario-table th:nth-child(1){width:110px;}
+    .economics-table{min-width:1080px;}
+    .economics-table th:nth-child(2),
+    .economics-table th:nth-child(3),
+    .economics-table th:nth-child(4),
+    .economics-table th:nth-child(6),
+    .economics-table th:nth-child(7),
+    .economics-table th:nth-child(10){min-width:72px;}
+    .economics-table th:nth-child(5),
+    .economics-table th:nth-child(8),
+    .economics-table th:nth-child(9),
+    .economics-table th:nth-child(11){min-width:96px;}
+    .economics-table tbody tr.econ-safe{background:rgba(22,101,52,.06);}
+    .economics-table tbody tr.econ-review{background:rgba(146,64,14,.08);}
+    .economics-table tbody tr.econ-low{background:rgba(153,27,27,.08);}
+    .economics-table tfoot td{
+      position:sticky;
+      bottom:0;
+      background:#f8fafc;
+      font-weight:800;
+      box-shadow:0 -1px 0 #dbe3ef;
+      z-index:2;
+    }
+
+    .foot{
+      margin-top:18px;
+      color:#94a3b8;
+      font-size:13px;
+      text-align:center;
+    }
+
+    @media print{
+      body{
+        background:#fff;
+        color:#000;
+      }
+      .hero,
+      .controls-panel,
+      .summary-toolbar,
+      .foot{
+        display:none !important;
+      }
+      .shell{
+        width:100%;
+        margin:0;
+      }
+      .workspace{
+        display:block;
+      }
+      .panel{
+        box-shadow:none;
+        border-radius:0;
+      }
+    }
+
+    @media (max-width:1150px){
+      .hero{ grid-template-columns:1fr; }
+      .workspace{ grid-template-columns:1fr; }
+      .summary-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+      .scenario-wrap{ grid-template-columns:1fr; }
+    }
+    @media (max-width:700px){
+      .summary-grid{ grid-template-columns:1fr; }
+      .row-2, .headroom-stats, .insight-grid{ grid-template-columns:1fr; }
+      .shell{ width:min(100% - 20px, 1400px); }
+      .panel-body, .panel-header{ padding-left:16px; padding-right:16px; }
+      thead th, tbody td, tfoot td{ padding:8px 6px; }
+      .hero .meta{ grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div>
+        <h1>GM Discount Calculator</h1>
+        <p>
+          Evaluate discount scenarios with confidence before a proposal moves forward. This calculator helps commercial,
+          delivery, and leadership teams understand the impact of pricing decisions on revenue, gross margin, and
+          approval posture in one clear view.
+        </p>
+        <div class="hero-actions">
+          <span class="hero-chip">Instant margin impact</span>
+          <span class="hero-chip">Role-weighted discount allocation</span>
+          <span class="hero-chip">Approval guardrails</span>
+        </div>
+      </div>
+      <div class="meta">
+        <div class="pill-card">
+          <div class="k">Primary purpose</div>
+          <div class="v">Protect margin while enabling smart deal decisions</div>
+        </div>
+        <div class="pill-card">
+          <div class="k">Best for</div>
+          <div class="v">Sellers, deal desk, delivery leads</div>
+        </div>
+        <div class="pill-card">
+          <div class="k">Commercial model</div>
+          <div class="v">Role mix + pricing + discount</div>
+        </div>
+        <div class="pill-card">
+          <div class="k">Decision output</div>
+          <div class="v">SAFE, REVIEW, APPROVAL, or ESCALATE</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <div class="panel controls-panel">
+        <div class="panel-header">
+          <h2>Controls</h2>
+        </div>
+        <div class="panel-body">
+          <div class="subsection">
+            <div class="section-kicker">Commercial guardrails</div>
+            <p class="section-copy">Set the target margin, discount method, and approval thresholds used to evaluate the deal.</p>
+
+            <div class="field">
+              <label for="targetGm">Gross Margin Target (%)</label>
+              <input id="targetGm" type="number" min="0" max="100" step="0.1" value="50" />
+            </div>
+
+            <div class="field">
+              <label>Discount Type</label>
+              <input id="discountType" type="hidden" value="Percent" />
+              <div class="toggle-group" role="tablist" aria-label="Discount Type">
+                <button class="toggle-btn active" type="button" data-discount-type="Percent">Percent</button>
+                <button class="toggle-btn" type="button" data-discount-type="Amount">Amount</button>
+              </div>
+              <small>Use either a discount percentage or a fixed discount amount.</small>
+            </div>
+
+            <div class="row-2 discount-input-row single" id="discountInputRow">
+              <div class="field" id="discountPercentField">
+                <label for="discountPercent">Discount % Input</label>
+                <input id="discountPercent" type="number" min="0" max="100" step="0.1" value="0" />
+              </div>
+              <div class="field is-hidden" id="discountAmountField">
+                <label for="discountAmount">Discount $ Input</label>
+                <div class="input-prefix">
+                  <span>$</span>
+                  <input id="discountAmount" type="number" min="0" step="100" value="0" />
+                </div>
+              </div>
+            </div>
+
+            <div class="row-2">
+              <div class="field">
+                <label for="reviewBand">Review Band (pts)</label>
+                <input id="reviewBand" type="number" min="0" max="100" step="0.1" value="10" />
+                <small>Yellow zone below target.</small>
+              </div>
+              <div class="field">
+                <label for="approvalBand">Approval Band (pts)</label>
+                <input id="approvalBand" type="number" min="0" max="100" step="0.1" value="20" />
+                <small>Orange zone below target.</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="subsection">
+            <div class="section-kicker">Primary deal inputs</div>
+            <div class="table-shell">
+              <table class="input-table">
+                <thead>
+                  <tr>
+                    <th>Role</th>
+                    <th>Days</th>
+                    <th>Cost</th>
+                    <th>List</th>
+                    <th>GM %</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="rolesBody"></tbody>
+                <tfoot>
+                  <tr>
+                    <td><strong>Total</strong></td>
+                    <td id="totalDays" class="computed">0.0</td>
+                    <td id="totalCostInput" class="computed">$0</td>
+                    <td id="totalRevenueInput" class="computed">$0</td>
+                    <td id="totalGMInput" class="computed">0.0%</td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <div class="controls-toolbar">
+              <button id="addRole" class="btn btn-primary" type="button">Add role</button>
+              <button id="resetSample" class="btn btn-secondary" type="button">Reset sample</button>
+            </div>
+          </div>
+
+          <div class="subtle-note">
+            <strong>How it works:</strong> the requested discount is allocated across roles in proportion to effort.
+            The calculator then checks the resulting blended gross margin against the target and review bands to determine the approval signal.
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Deal Summary</h2>
+        </div>
+        <div class="panel-body">
+          <div class="summary-toolbar">
+            <button id="copyLink" class="btn btn-ghost" type="button">Copy shareable link</button>
+            <button id="exportPdf" class="btn btn-primary" type="button">Export summary (PDF)</button>
+          </div>
+
+          <div class="summary-grid">
+            <div class="stat">
+              <div class="label">Standard Revenue</div>
+              <div class="value" id="sumStandardRevenue">$0</div>
+            </div>
+            <div class="stat highlight">
+              <div class="label">Discounted Revenue</div>
+              <div class="value" id="sumDiscountedRevenue">$0</div>
+              <div class="sub" id="sumDiscountValue">Active discount: $0</div>
+            </div>
+            <div class="stat">
+              <div class="label">Project Cost</div>
+              <div class="value" id="sumCost">$0</div>
+            </div>
+            <div class="stat highlight">
+              <div class="label">Gross Margin (%)</div>
+              <div class="value" id="sumGM">0.0%</div>
+              <div class="sub" id="sumMinPrice">Min price @ target GM: $0</div>
+              <div class="sub" id="sumAdjustmentHint" style="margin-top:6px;padding-top:6px;border-top:1px dashed #bfdbfe;text-align:left;"></div>
+            </div>
+            <div class="stat">
+              <div class="label">Gross Profit</div>
+              <div class="value" id="sumGrossProfitValue">$0</div>
+            </div>
+            <div class="stat highlight">
+              <div class="label">Decision Signal</div>
+              <div class="value"><span id="approvalBadge" class="badge SAFE">SAFE</span></div>
+            </div>
+          </div>
+
+          <div class="insight-grid">
+            <div class="mini-card">
+              <h3>Approval range view</h3>
+              <p>Shows where the current gross margin sits against target, review, and approval thresholds.</p>
+              <div class="range-track">
+                <div class="range-target" id="rangeTargetMarker" style="left:60%"></div>
+                <div class="range-marker" id="rangeMarker" style="left:50%"></div>
+              </div>
+              <div class="range-target-label" id="rangeTargetLabel">Target: 60%</div>
+              <div class="range-labels">
+                <span>0%</span>
+                <span id="labelApprovalFloor">40%</span>
+                <span id="labelReviewFloor">50%</span>
+                <span id="labelTarget">60%</span>
+                <span>100%</span>
+              </div>
+            </div>
+
+            <div class="mini-card">
+              <h3>Discount headroom</h3>
+              <p>Helps assess how much discount capacity remains before the target margin is breached.</p>
+              <div class="headroom-stats">
+                <div class="headroom-box">
+                  <div class="k">Max discount @ target</div>
+                  <div class="v" id="maxDiscountAllowed">$0</div>
+                </div>
+                <div class="headroom-box">
+                  <div class="k">Remaining headroom</div>
+                  <div class="v" id="remainingHeadroom">$0</div>
+                </div>
+              </div>
+              <div class="bar"><span id="headroomBar"></span></div>
+            </div>
+          </div>
+
+          <div class="table-shell">
+            <table class="economics-table">
+              <thead>
+                <tr>
+                  <th>Role</th>
+                  <th>Days</th>
+                  <th>Cost</th>
+                  <th>List</th>
+                  <th>Std Rev</th>
+                  <th>Effort%</th>
+                  <th>Disc $</th>
+                  <th>Disc Rev</th>
+                  <th>Proj Cost</th>
+                  <th>GM %</th>
+                  <th>Min Rev</th>
+                </tr>
+              </thead>
+              <tbody id="economicsBody"></tbody>
+              <tfoot>
+                <tr>
+                  <td><strong>Total</strong></td>
+                  <td id="econTotalDays" class="computed">0.0</td>
+                  <td></td>
+                  <td></td>
+                  <td id="econTotalStdRev" class="computed">$0</td>
+                  <td class="computed">100.0%</td>
+                  <td id="econTotalDiscount" class="computed">$0</td>
+                  <td id="econTotalDiscRev" class="computed">$0</td>
+                  <td id="econTotalCost" class="computed">$0</td>
+                  <td id="econTotalGM" class="computed">0.0%</td>
+                  <td id="econTotalMinRev" class="computed">$0</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <div class="scenario-wrap">
+            <div class="scenario-card">
+              <h3>Scenario comparison</h3>
+              <div class="table-shell">
+                <table class="scenario-table">
+                  <thead>
+                    <tr>
+                      <th>Scen</th>
+                      <th>Rev</th>
+                      <th>GM %</th>
+                      <th>Disc $</th>
+                      <th>Sig</th>
+                    </tr>
+                  </thead>
+                  <tbody id="scenarioBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="scenario-card">
+              <h3>Margin position</h3>
+              <div class="legend">
+                <div class="item">
+                  <strong>Actual GM:</strong> <span id="legendActual">0.0%</span>
+                  <div class="bar"><span id="actualBar"></span></div>
+                </div>
+                <div class="item">
+                  <strong>Target GM:</strong> <span id="legendTarget">60.0%</span>
+                </div>
+                <div class="item">
+                  <strong>Review floor:</strong> <span id="legendReview">50.0%</span>
+                </div>
+                <div class="item">
+                  <strong>Approval floor:</strong> <span id="legendApproval">40.0%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <div class="foot">
+      Built for cleaner pricing discussions, stronger guardrails, and faster proposal decisions.
+    </div>
+  </div>
+
+  <script>
+    const el = (id) => document.getElementById(id);
+
+    const initialRows = [
+      { role: 'AI Solutions Consultant', days: 0, dailyCost: 400, standardRate: 1000 },
+      { role: 'AI Workflow/Integration Engineer', days: 0, dailyCost: 300, standardRate: 1000 },
+      { role: 'Project Manager', days: 0, dailyCost: 350, standardRate: 1000 },
+      { role: 'Cloud Ops Engineer', days: 0, dailyCost: 400, standardRate: 1000 },
+      { role: 'AI Solutions Architect', days: 0, dailyCost: 450, standardRate: 1000 }
+    ];
+
+    const currency = (n) =>
+      new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(isFinite(n) ? n : 0);
+
+    const pct = (n) =>
+      `${((isFinite(n) ? n : 0) * 100).toFixed(1)}%`;
+
+    function readPercentInput(id){
+      return (parseFloat(el(id).value) || 0) / 100;
+    }
+
+    function clamp(v, min, max){
+      return Math.max(min, Math.min(max, v));
+    }
+
+    function gmClassForStatus(status){
+      if(status === 'SAFE') return 'gm-safe';
+      if(status === 'REVIEW') return 'gm-review';
+      if(status === 'APPROVAL') return 'gm-approval';
+      return 'gm-escalate';
+    }
+
+    function gmRowClass(value){
+      if(value >= 0.40) return 'row-gm-safe';
+      if(value >= 0.25) return 'row-gm-review';
+      return 'row-gm-low';
+    }
+
+    function gmCellClass(value){
+      if(value >= 0.40) return 'gm-safe';
+      if(value >= 0.25) return 'gm-review';
+      return 'gm-escalate';
+    }
+
+    function updateDiscountVisibility(){
+      const type = el('discountType').value;
+      const isPercent = type === 'Percent';
+      el('discountPercentField').classList.toggle('is-hidden', !isPercent);
+      el('discountAmountField').classList.toggle('is-hidden', isPercent);
+      el('discountInputRow').classList.add('single');
+    }
+
+    function roleRowTemplate(row = { role:'New Role', days:0, dailyCost:0, standardRate:0 }){
+      const tr = document.createElement('tr');
+      const rowRevenue = row.days * row.standardRate;
+      const rowCost = row.days * row.dailyCost;
+      const rowGm = rowRevenue === 0 ? 0 : (rowRevenue - rowCost) / rowRevenue;
+      tr.className = gmRowClass(rowGm);
+      tr.innerHTML = `
+        <td><input class="editable role-name" data-key="role" value="${row.role}"></td>
+        <td><input class="editable number days-input" type="number" min="0" step="0.1" data-key="days" value="${row.days}"></td>
+        <td><div class="input-prefix"><span>$</span><input class="editable number" type="number" min="0" step="0.1" data-key="dailyCost" value="${row.dailyCost}"></div></td>
+        <td><div class="input-prefix"><span>$</span><input class="editable number" type="number" min="0" step="0.1" data-key="standardRate" value="${row.standardRate}"></div></td>
+        <td class="gm-cell ${gmCellClass(rowGm)}" data-role-gm>${pct(rowGm)}</td>
+        <td style="text-align:center;"><button class="btn btn-danger" type="button">Remove</button></td>
+      `;
+      tr.querySelectorAll('input').forEach(i => i.addEventListener('input', () => recalc()));
+      tr.querySelector('button').addEventListener('click', () => {
+        tr.remove();
+        recalc();
+      });
+      return tr;
+    }
+
+    function setStatusBadge(node, status){
+      node.className = `badge ${status}`;
+      node.textContent = status;
+    }
+
+    function getState(){
+      const rows = [...el('rolesBody').querySelectorAll('tr')].map(tr => {
+        const get = (key) => {
+          const node = tr.querySelector(`[data-key="${key}"]`);
+          return key === 'role' ? node.value : (parseFloat(node.value) || 0);
+        };
+        return {
+          role: get('role'),
+          days: get('days'),
+          dailyCost: get('dailyCost'),
+          standardRate: get('standardRate')
+        };
+      });
+      return {
+        targetGm: el('targetGm').value,
+        discountType: el('discountType').value,
+        discountPercent: el('discountPercent').value,
+        discountAmount: el('discountAmount').value,
+        reviewBand: el('reviewBand').value,
+        approvalBand: el('approvalBand').value,
+        rows
+      };
+    }
+
+    function applyState(state){
+      const body = el('rolesBody');
+      body.innerHTML = '';
+      (state.rows || initialRows).forEach(r => body.appendChild(roleRowTemplate(r)));
+
+      el('targetGm').value = state.targetGm ?? 50;
+      el('discountType').value = state.discountType ?? 'Percent';
+      el('discountPercent').value = state.discountPercent ?? 0;
+      el('discountAmount').value = state.discountAmount ?? 0;
+      el('reviewBand').value = state.reviewBand ?? 10;
+      el('approvalBand').value = state.approvalBand ?? 20;
+
+      document.querySelectorAll('[data-discount-type]').forEach(node => {
+        node.classList.toggle('active', node.getAttribute('data-discount-type') === el('discountType').value);
+      });
+
+      updateDiscountVisibility();
+      recalc(false);
+    }
+
+    function encodeState(){
+      return btoa(unescape(encodeURIComponent(JSON.stringify(getState()))));
+    }
+
+    function decodeState(raw){
+      try{
+        return JSON.parse(decodeURIComponent(escape(atob(raw))));
+      } catch(e){
+        return null;
+      }
+    }
+
+    function updateUrlState(){
+      const url = new URL(window.location.href);
+      url.searchParams.set('state', encodeState());
+      history.replaceState({}, '', url);
+    }
+
+    function copyShareableLink(){
+      const url = new URL(window.location.href);
+      url.searchParams.set('state', encodeState());
+      navigator.clipboard.writeText(url.toString()).then(() => {
+        const btn = el('copyLink');
+        const original = btn.textContent;
+        btn.textContent = 'Link copied';
+        setTimeout(() => btn.textContent = original, 1400);
+      });
+    }
+
+    function exportSummaryPdf(){
+      const state = getState();
+      const summaryHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8" />
+          <title>GM Discount Summary</title>
+          <style>
+            body{font-family:Inter, Arial, sans-serif; padding:28px; color:#0f172a;}
+            h1{margin:0 0 8px; font-size:28px;}
+            p{margin:0 0 18px; color:#64748b;}
+            .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:18px 0;}
+            .card{border:1px solid #dbe3ef; border-radius:14px; padding:14px; background:#f8fafc;}
+            .k{font-size:11px; text-transform:uppercase; color:#64748b; margin-bottom:6px; letter-spacing:.06em;}
+            .v{font-size:24px; font-weight:800;}
+            table{width:100%; border-collapse:collapse; margin-top:18px;}
+            th,td{border:1px solid #dbe3ef; padding:10px; text-align:left; font-size:13px;}
+            th{background:#f8fafc;}
+          </style>
+        </head>
+        <body>
+          <h1>GM Discount Summary</h1>
+          <p>Generated from the current deal state.</p>
+          <div class="grid">
+            <div class="card"><div class="k">Standard Revenue</div><div class="v">${el('sumStandardRevenue').textContent}</div></div>
+            <div class="card"><div class="k">Discounted Revenue</div><div class="v">${el('sumDiscountedRevenue').textContent}</div></div>
+            <div class="card"><div class="k">Project Cost</div><div class="v">${el('sumCost').textContent}</div></div>
+            <div class="card"><div class="k">Gross Margin</div><div class="v">${el('sumGM').textContent}</div></div>
+            <div class="card"><div class="k">Gross Profit</div><div class="v">${el('sumGrossProfitValue').textContent}</div></div>
+            <div class="card"><div class="k">Decision Signal</div><div class="v">${el('approvalBadge').textContent}</div></div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Role</th>
+                <th>Delivery Effort (Days)</th>
+                <th>Cost Price - Day ($)</th>
+                <th>List Price - Day ($)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${state.rows.map(r => `
+                <tr>
+                  <td>${r.role}</td>
+                  <td>${r.days}</td>
+                  <td>${r.dailyCost}</td>
+                  <td>${r.standardRate}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `;
+      const w = window.open('', '_blank');
+      w.document.open();
+      w.document.write(summaryHtml);
+      w.document.close();
+      w.focus();
+      setTimeout(() => w.print(), 250);
+    }
+
+    function resetSample(){
+      applyState({
+        targetGm: 50,
+        discountType: 'Percent',
+        discountPercent: 0,
+        discountAmount: 0,
+        reviewBand: 10,
+        approvalBand: 20,
+        rows: initialRows
+      });
+    }
+
+    function buildAdjustmentHint(actualGM, targetGM, totalDiscountedRevenue, totalCost, activeDiscount, totalStandardRevenue){
+      if(totalCost === 0 && totalDiscountedRevenue === 0) return '';
+
+      const gmGap = targetGM - actualGM;
+
+      if(gmGap <= 0){
+        return `<span style="color:#166534;font-weight:700;">✓ Already at or above target GM.</span>`;
+      }
+
+      // Required revenue to hit target GM
+      const requiredRev = totalCost > 0 ? totalCost / (1 - targetGM) : 0;
+      const maxAllowedDiscount = Math.max(0, totalStandardRevenue - requiredRev);
+      const discountReduction = activeDiscount - maxAllowedDiscount;
+
+      if(totalStandardRevenue === 0){
+        return `<span style="color:#92400e;font-weight:700;">Add days and rates to see discount guidance.</span>`;
+      }
+
+      if(activeDiscount <= 0){
+        // No discount in play — revenue is simply too low vs cost
+        const revenueUplift = requiredRev - totalDiscountedRevenue;
+        const upliftPct = totalDiscountedRevenue > 0 ? (revenueUplift / totalDiscountedRevenue) * 100 : 0;
+        return `<span style="color:#92400e;font-weight:700;">No discount applied.</span> List price needs to increase by <b>${currency(revenueUplift)}</b> (+${upliftPct.toFixed(1)}%) to reach target GM of ${pct(targetGM)}.`;
+      }
+
+      const newDiscPct = totalStandardRevenue > 0 ? (maxAllowedDiscount / totalStandardRevenue) * 100 : 0;
+
+      if(discountReduction > 0){
+        return `<span style="color:#92400e;font-weight:700;">Discount too high.</span> Reduce discount by <b>${currency(discountReduction)}</b> → maximum allowable discount is <b>${currency(maxAllowedDiscount)}</b> (${newDiscPct.toFixed(1)}% of list) to reach target GM of ${pct(targetGM)}.`;
+      }
+
+      // Discount is within range but GM still below target (edge case: zero-revenue rows etc.)
+      return `<span style="color:#92400e;font-weight:700;">Review deal inputs.</span> Current discount is within range but GM is still below target — check list rates and days.`;
+    }
+
+    function recalc(updateState = true){
+      const targetGM = readPercentInput('targetGm');
+      const reviewBand = readPercentInput('reviewBand');
+      const approvalBand = readPercentInput('approvalBand');
+      const discountType = el('discountType').value;
+      const discountPercent = readPercentInput('discountPercent');
+      const discountAmountInput = parseFloat(el('discountAmount').value) || 0;
+
+      const rows = [...el('rolesBody').querySelectorAll('tr')].map(tr => {
+        const value = (key, fallback = 0) => {
+          const node = tr.querySelector(`[data-key="${key}"]`);
+          if(!node) return fallback;
+          return key === 'role' ? node.value : (parseFloat(node.value) || 0);
+        };
+        return {
+          tr,
+          role: value('role',''),
+          days: value('days'),
+          dailyCost: value('dailyCost'),
+          standardRate: value('standardRate')
+        };
+      });
+
+      const totalDays = rows.reduce((a,b) => a + b.days, 0);
+      const totalStandardRevenue = rows.reduce((a,b) => a + (b.days * b.standardRate), 0);
+      const activeDiscount = discountType === 'Percent'
+        ? discountPercent * totalStandardRevenue
+        : discountAmountInput;
+
+      let totalDiscountedRevenue = 0;
+      let totalCost = 0;
+
+      rows.forEach(r => {
+        r.standardRevenue = r.days * r.standardRate;
+        r.effortPct = totalDays === 0 ? 0 : r.days / totalDays;
+        r.discount = r.effortPct * activeDiscount;
+        r.discountedRevenue = r.standardRevenue - r.discount;
+        r.cost = r.days * r.dailyCost;
+        r.gmPct = r.discountedRevenue === 0 ? 0 : (r.discountedRevenue - r.cost) / r.discountedRevenue;
+        r.inputGmPct = r.standardRevenue === 0 ? 0 : (r.standardRevenue - r.cost) / r.standardRevenue;
+        r.minRev = (1 - targetGM) === 0 ? 0 : r.cost / (1 - targetGM);
+
+        totalDiscountedRevenue += r.discountedRevenue;
+        totalCost += r.cost;
+
+        const gmNode = r.tr.querySelector('[data-role-gm]');
+        if(gmNode){
+          gmNode.textContent = pct(r.inputGmPct);
+          gmNode.className = `gm-cell ${gmCellClass(r.inputGmPct)}`;
+        }
+        r.tr.classList.remove('row-gm-safe','row-gm-review','row-gm-low');
+        r.tr.classList.add(gmRowClass(r.inputGmPct));
+      });
+
+      const actualGM = totalDiscountedRevenue === 0 ? 0 : (totalDiscountedRevenue - totalCost) / totalDiscountedRevenue;
+      const minPriceAtTarget = (1 - targetGM) === 0 ? 0 : totalCost / (1 - targetGM);
+      const maxDiscountAllowed = Math.max(0, totalStandardRevenue - minPriceAtTarget);
+      const remainingHeadroom = Math.max(0, maxDiscountAllowed - activeDiscount);
+
+      const approvalStatus = actualGM >= targetGM
+        ? 'SAFE'
+        : actualGM >= (targetGM - reviewBand)
+          ? 'REVIEW'
+          : actualGM >= (targetGM - approvalBand)
+            ? 'APPROVAL'
+            : 'ESCALATE';
+
+      el('sumStandardRevenue').textContent = currency(totalStandardRevenue);
+      el('sumDiscountedRevenue').textContent = currency(totalDiscountedRevenue);
+      el('sumDiscountValue').textContent = `Active discount: ${currency(activeDiscount)}`;
+      el('sumCost').textContent = currency(totalCost);
+      el('sumGrossProfitValue').textContent = currency(totalDiscountedRevenue - totalCost);
+      el('sumGM').textContent = pct(actualGM);
+      el('sumGM').className = `value ${gmClassForStatus(approvalStatus)}`;
+      el('sumMinPrice').textContent = `Min price @ target GM: ${currency(minPriceAtTarget)}`;
+
+      // Adjustment hint
+      el('sumAdjustmentHint').innerHTML = buildAdjustmentHint(
+        actualGM, targetGM, totalDiscountedRevenue, totalCost, activeDiscount, totalStandardRevenue
+      );
+
+      setStatusBadge(el('approvalBadge'), approvalStatus);
+
+      el('legendActual').textContent = pct(actualGM);
+      el('legendTarget').textContent = pct(targetGM);
+      el('legendReview').textContent = pct(targetGM - reviewBand);
+      el('legendApproval').textContent = pct(targetGM - approvalBand);
+
+      el('labelTarget').textContent = pct(targetGM);
+      el('labelReviewFloor').textContent = pct(targetGM - reviewBand);
+      el('labelApprovalFloor').textContent = pct(targetGM - approvalBand);
+      el('rangeTargetLabel').textContent = `Target: ${pct(targetGM)}`;
+
+      el('actualBar').style.width = `${clamp(actualGM * 100, 0, 100)}%`;
+      el('rangeMarker').style.left = `${clamp(actualGM * 100, 0, 100)}%`;
+      el('rangeTargetMarker').style.left = `${clamp(targetGM * 100, 0, 100)}%`;
+      el('maxDiscountAllowed').textContent = currency(maxDiscountAllowed);
+      el('remainingHeadroom').textContent = currency(remainingHeadroom);
+
+      const headroomUsedPct = maxDiscountAllowed <= 0 ? 100 : clamp((activeDiscount / maxDiscountAllowed) * 100, 0, 100);
+      el('headroomBar').style.width = `${headroomUsedPct}%`;
+
+      el('totalDays').textContent = totalDays.toFixed(1);
+      el('totalCostInput').textContent = currency(totalCost);
+      el('totalRevenueInput').textContent = currency(totalStandardRevenue);
+      el('totalGMInput').textContent = pct(totalStandardRevenue === 0 ? 0 : (totalStandardRevenue - totalCost) / totalStandardRevenue);
+      el('totalGMInput').className = `computed ${gmCellClass(totalStandardRevenue === 0 ? 0 : (totalStandardRevenue - totalCost) / totalStandardRevenue)}`;
+
+      el('economicsBody').innerHTML = rows.map(r => {
+        const econClass = r.gmPct >= 0.40 ? 'econ-safe' : r.gmPct >= 0.25 ? 'econ-review' : 'econ-low';
+        return `
+        <tr class="${econClass}">
+          <td>${r.role || '<span class="muted">New Role</span>'}</td>
+          <td class="number">${r.days.toFixed(1)}</td>
+          <td class="number">${currency(r.dailyCost)}</td>
+          <td class="number">${currency(r.standardRate)}</td>
+          <td class="number computed">${currency(r.standardRevenue)}</td>
+          <td class="number computed">${pct(r.effortPct)}</td>
+          <td class="number computed">${currency(r.discount)}</td>
+          <td class="number computed">${currency(r.discountedRevenue)}</td>
+          <td class="number computed">${currency(r.cost)}</td>
+          <td class="number computed ${gmCellClass(r.gmPct)}">${pct(r.gmPct)}</td>
+          <td class="number computed">${currency(r.minRev)}</td>
+        </tr>
+      `;
+      }).join('');
+
+      el('econTotalDays').textContent = totalDays.toFixed(1);
+      el('econTotalStdRev').textContent = currency(totalStandardRevenue);
+      el('econTotalDiscount').textContent = currency(activeDiscount);
+      el('econTotalDiscRev').textContent = currency(totalDiscountedRevenue);
+      el('econTotalCost').textContent = currency(totalCost);
+      el('econTotalGM').textContent = pct(actualGM);
+      el('econTotalGM').className = `computed ${gmCellClass(actualGM)}`;
+      el('econTotalMinRev').textContent = currency(minPriceAtTarget);
+
+      const scenarios = [
+        { name:'No Discount', discount:0 },
+        { name:'Current', discount:activeDiscount },
+        { name:'Max @ Target GM', discount:maxDiscountAllowed }
+      ];
+
+      el('scenarioBody').innerHTML = scenarios.map(s => {
+        const revenue = totalStandardRevenue - s.discount;
+        const gm = revenue === 0 ? 0 : (revenue - totalCost) / revenue;
+        const signal = gm >= targetGM
+          ? 'SAFE'
+          : gm >= (targetGM - reviewBand)
+            ? 'REVIEW'
+            : gm >= (targetGM - approvalBand)
+              ? 'APPROVAL'
+              : 'ESCALATE';
+        return `
+          <tr>
+            <td style="text-align:center;">${s.name}</td>
+            <td class="number">${currency(revenue)}</td>
+            <td class="number">${pct(gm)}</td>
+            <td class="number">${currency(s.discount)}</td>
+            <td style="text-align:center;"><span class="badge ${signal}">${signal}</span></td>
+          </tr>
+        `;
+      }).join('');
+
+      if(updateState) updateUrlState();
+    }
+
+    document.querySelectorAll('[data-discount-type]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const value = btn.getAttribute('data-discount-type');
+        el('discountType').value = value;
+        document.querySelectorAll('[data-discount-type]').forEach(node => node.classList.remove('active'));
+        btn.classList.add('active');
+        updateDiscountVisibility();
+        recalc();
+      });
+    });
+
+    ['targetGm','discountPercent','discountAmount','reviewBand','approvalBand']
+      .forEach(id => el(id).addEventListener('input', () => recalc()));
+
+    el('addRole').addEventListener('click', () => {
+      el('rolesBody').appendChild(roleRowTemplate());
+      recalc();
+    });
+    el('resetSample').addEventListener('click', resetSample);
+    el('copyLink').addEventListener('click', copyShareableLink);
+    el('exportPdf').addEventListener('click', exportSummaryPdf);
+
+    const existingState = new URL(window.location.href).searchParams.get('state');
+    const decoded = existingState ? decodeState(existingState) : null;
+    if(decoded){
+      applyState(decoded);
+    } else {
+      resetSample();
+    }
+  </script>
+</body>
+</html>

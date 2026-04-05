@@ -51,10 +51,8 @@ export default async function AdminPage() {
         >
           ← Back to Calculator
         </Link>
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-indigo-600 uppercase tracking-wide">Admin</span>
-        </div>
-        <h1 className="text-lg font-bold text-gray-900 mt-0.5">Admin</h1>
+        <h1 className="text-lg font-bold text-gray-900">Quote Dashboard</h1>
+        <p className="text-xs text-gray-500 mt-0.5">All quotes across all sellers</p>
       </div>
 
       <AdminNav active="quotes" />

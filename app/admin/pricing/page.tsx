@@ -1,36 +1,49 @@
 import Link from 'next/link'
 import { createServiceClient } from '@/lib/supabase/server'
 import { DEFAULT_PRICING_CONFIG } from '@/lib/pricing-engine'
-import type { PricingConfig } from '@/lib/types'
+import { DEFAULT_GM_CONFIG } from '@/lib/gm-engine'
+import type { PricingConfig, GmConfig } from '@/lib/types'
 import PricingConfigPanel from '@/components/admin/PricingConfigPanel'
 import AdminNav from '@/components/admin/AdminNav'
 
-async function fetchPricingConfig(): Promise<{ config: PricingConfig; updatedAt: string | null; updatedBy: string | null }> {
+async function fetchConfigs(): Promise<{
+  config: PricingConfig
+  gmConfig: GmConfig
+  updatedAt: string | null
+  updatedBy: string | null
+}> {
   try {
     const supabase = createServiceClient()
-    const { data, error } = await supabase
-      .from('pricing_config')
-      .select('config, updated_at, updated_by')
-      .eq('id', 1)
-      .single()
+    const [pricingResult, gmResult] = await Promise.all([
+      supabase.from('pricing_config').select('config, updated_at, updated_by').eq('id', 1).single(),
+      supabase.from('gm_config').select('config').eq('id', 1).single(),
+    ])
 
-    if (error || !data) {
-      return { config: DEFAULT_PRICING_CONFIG, updatedAt: null, updatedBy: null }
-    }
+    const config: PricingConfig = pricingResult.data
+      ? { ...DEFAULT_PRICING_CONFIG, ...(pricingResult.data.config as Partial<PricingConfig>) }
+      : DEFAULT_PRICING_CONFIG
 
-    const merged: PricingConfig = { ...DEFAULT_PRICING_CONFIG, ...data.config }
+    const gmConfig: GmConfig = gmResult.data
+      ? {
+          ...DEFAULT_GM_CONFIG,
+          ...(gmResult.data.config as Partial<GmConfig>),
+          defaultRoles: (gmResult.data.config as Partial<GmConfig>).defaultRoles ?? DEFAULT_GM_CONFIG.defaultRoles,
+        }
+      : DEFAULT_GM_CONFIG
+
     return {
-      config: merged,
-      updatedAt: data.updated_at as string | null,
-      updatedBy: data.updated_by as string | null,
+      config,
+      gmConfig,
+      updatedAt: pricingResult.data?.updated_at as string | null ?? null,
+      updatedBy: pricingResult.data?.updated_by as string | null ?? null,
     }
   } catch {
-    return { config: DEFAULT_PRICING_CONFIG, updatedAt: null, updatedBy: null }
+    return { config: DEFAULT_PRICING_CONFIG, gmConfig: DEFAULT_GM_CONFIG, updatedAt: null, updatedBy: null }
   }
 }
 
 export default async function AdminPricingPage() {
-  const { config, updatedAt, updatedBy } = await fetchPricingConfig()
+  const { config, gmConfig, updatedAt, updatedBy } = await fetchConfigs()
 
   const lastSaved =
     updatedAt && updatedBy !== 'system'
@@ -49,31 +62,24 @@ export default async function AdminPricingPage() {
         >
           ← Back to Calculator
         </Link>
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-indigo-600 uppercase tracking-wide">Admin</span>
-        </div>
         <div className="flex items-start justify-between gap-4">
-          <h1 className="text-lg font-bold text-gray-900 mt-0.5">Admin</h1>
+          <div>
+            <h1 className="text-lg font-bold text-gray-900">Pricing Configuration</h1>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Edit calculator values. Changes take effect immediately for all sellers.
+            </p>
+          </div>
+          {lastSaved && (
+            <p className="text-[11px] text-gray-400 mt-1 whitespace-nowrap shrink-0">
+              Last saved: {lastSaved}
+            </p>
+          )}
         </div>
       </div>
 
       <AdminNav active="pricing" />
 
-      <div className="flex items-start justify-between gap-4 mb-4">
-        <div>
-          <h2 className="text-sm font-semibold text-gray-800">Pricing Configuration</h2>
-          <p className="text-xs text-gray-500 mt-0.5">
-            Edit calculator values. Changes take effect immediately for all sellers.
-          </p>
-        </div>
-        {lastSaved && (
-          <p className="text-[11px] text-gray-400 whitespace-nowrap shrink-0">
-            Last saved: {lastSaved}
-          </p>
-        )}
-      </div>
-
-      <PricingConfigPanel initialConfig={config} />
+      <PricingConfigPanel initialConfig={config} initialGmConfig={gmConfig} />
     </div>
   )
 }

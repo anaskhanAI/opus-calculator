@@ -1,27 +1,25 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import type { PricingConfig, DeploymentOption, WeekLookupRow, Tier2LookupRow } from '@/lib/types'
+import type { PricingConfig, DeploymentOption, WeekLookupRow, Tier2LookupRow, GmConfig, GmRole } from '@/lib/types'
 import { DEFAULT_PRICING_CONFIG } from '@/lib/pricing-engine'
+import { DEFAULT_GM_CONFIG } from '@/lib/gm-engine'
 
 interface PricingConfigPanelProps {
   initialConfig: PricingConfig
+  initialGmConfig: GmConfig
 }
 
-// ─── Small reusable primitives ────────────────────────────────────────────────
+// ─── Primitives ───────────────────────────────────────────────────────────────
 
 const labelCls = 'block text-[10px] font-medium text-gray-400 uppercase tracking-wide mb-1'
 const inputCls =
   'w-full rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 focus:border-indigo-400'
-const numInputCls = inputCls + ' [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+const numInputCls =
+  inputCls +
+  ' [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
 
-function Field({
-  label,
-  children,
-}: {
-  label: string
-  children: React.ReactNode
-}) {
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
       <label className={labelCls}>{label}</label>
@@ -53,7 +51,21 @@ function NumInput({
   )
 }
 
-// ─── Section wrapper with collapse ───────────────────────────────────────────
+function ChevronIcon({ open }: { open: boolean }) {
+  return (
+    <svg
+      className={`w-4 h-4 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+    </svg>
+  )
+}
+
+// ─── Collapsible section ──────────────────────────────────────────────────────
 
 function Section({
   title,
@@ -68,70 +80,129 @@ function Section({
 }) {
   const [open, setOpen] = useState(defaultOpen)
   return (
-    <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 transition-colors"
       >
-        <div>
-          <p className="text-sm font-semibold text-gray-900">{title}</p>
-          {description && <p className="text-xs text-gray-400 mt-0.5">{description}</p>}
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-gray-900">{title}</span>
+          {description && (
+            <span className="hidden sm:inline text-xs text-gray-400">— {description}</span>
+          )}
         </div>
-        <span className="text-gray-400 text-xs ml-4">{open ? '▲' : '▼'}</span>
+        <ChevronIcon open={open} />
       </button>
-      {open && <div className="px-5 pb-5 pt-1 border-t border-gray-100">{children}</div>}
+      {open && (
+        <div className="px-4 pb-5 pt-3 border-t border-gray-100">{children}</div>
+      )}
     </div>
   )
 }
 
+// ─── Subsection label ─────────────────────────────────────────────────────────
+
+function SubLabel({ children }: { children: React.ReactNode }) {
+  return <p className="text-xs font-medium text-gray-500 mb-3">{children}</p>
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function PricingConfigPanel({ initialConfig }: PricingConfigPanelProps) {
+export default function PricingConfigPanel({ initialConfig, initialGmConfig }: PricingConfigPanelProps) {
   const [config, setConfig] = useState<PricingConfig>(initialConfig)
+  const [gmConfig, setGmConfig] = useState<GmConfig>(initialGmConfig)
   const [saving, setSaving] = useState(false)
-  const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+  const [saveStatus, setSaveStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
   const [isDirty, setIsDirty] = useState(false)
 
   function update<K extends keyof PricingConfig>(key: K, value: PricingConfig[K]) {
     setConfig((prev) => ({ ...prev, [key]: value }))
     setIsDirty(true)
-    setStatus(null)
+    setSaveStatus(null)
+  }
+
+  function updateGm<K extends keyof GmConfig>(key: K, value: GmConfig[K]) {
+    setGmConfig((prev) => ({ ...prev, [key]: value }))
+    setIsDirty(true)
+    setSaveStatus(null)
+  }
+
+  function updateGmRole(idx: number, field: keyof GmRole, value: string | number) {
+    const next = gmConfig.defaultRoles.map((r, i) =>
+      i === idx ? { ...r, [field]: typeof value === 'string' ? value : Number(value) } : r
+    )
+    updateGm('defaultRoles', next)
+  }
+
+  function addGmRole() {
+    updateGm('defaultRoles', [...gmConfig.defaultRoles, { role: '', days: 0, dailyCost: 0, standardRate: 0 }])
+  }
+
+  function removeGmRole(idx: number) {
+    updateGm('defaultRoles', gmConfig.defaultRoles.filter((_, i) => i !== idx))
   }
 
   function resetToDefaults() {
-    if (!confirm('Reset all pricing values to factory defaults? This cannot be undone without saving first.')) return
+    if (
+      !confirm(
+        'Reset all pricing values to factory defaults? Any unsaved changes will be lost.'
+      )
+    )
+      return
     setConfig(DEFAULT_PRICING_CONFIG)
+    setGmConfig(DEFAULT_GM_CONFIG)
     setIsDirty(true)
-    setStatus(null)
+    setSaveStatus(null)
   }
 
   const handleSave = useCallback(async () => {
     setSaving(true)
-    setStatus(null)
+    setSaveStatus(null)
     try {
-      const res = await fetch('/api/pricing-config', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config),
-      })
-      const json = await res.json()
-      if (!res.ok) {
-        setStatus({ type: 'error', message: json.error ?? 'Failed to save' })
+      const [pricingRes, gmRes] = await Promise.all([
+        fetch('/api/pricing-config', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(config),
+        }),
+        fetch('/api/gm-config', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(gmConfig),
+        }),
+      ])
+      const pricingJson = await pricingRes.json()
+      const gmJson = await gmRes.json()
+
+      if (!pricingRes.ok) {
+        setSaveStatus({ type: 'error', message: pricingJson.error ?? 'Failed to save pricing config.' })
+      } else if (!gmRes.ok) {
+        setSaveStatus({ type: 'error', message: gmJson.error ?? 'Failed to save GM config.' })
       } else {
-        setStatus({ type: 'success', message: 'Pricing configuration saved. Changes are live for all sellers.' })
+        setSaveStatus({
+          type: 'success',
+          message: 'Configuration saved. Changes are live.',
+        })
         setIsDirty(false)
       }
     } catch (err) {
-      setStatus({ type: 'error', message: err instanceof Error ? err.message : 'Network error' })
+      setSaveStatus({
+        type: 'error',
+        message: err instanceof Error ? err.message : 'Network error. Please try again.',
+      })
     } finally {
       setSaving(false)
     }
-  }, [config])
+  }, [config, gmConfig])
 
-  // ── Deployment options helpers ─────────────────────────────────────────────
+  // ── Deployment option helpers ─────────────────────────────────────────────
 
-  function updateDeploymentOption(idx: number, field: keyof DeploymentOption, value: string | number | 'On Demand') {
+  function updateDeploymentOption(
+    idx: number,
+    field: keyof DeploymentOption,
+    value: string | number | 'On Demand'
+  ) {
     const next = config.deploymentOptions.map((opt, i) =>
       i === idx ? { ...opt, [field]: value } : opt
     )
@@ -140,11 +211,10 @@ export default function PricingConfigPanel({ initialConfig }: PricingConfigPanel
 
   function toggleOnDemand(idx: number, field: 'price' | 'weeks') {
     const opt = config.deploymentOptions[idx]
-    const isOnDemand = opt[field] === 'On Demand'
-    updateDeploymentOption(idx, field, isOnDemand ? 0 : 'On Demand')
+    updateDeploymentOption(idx, field, opt[field] === 'On Demand' ? 0 : 'On Demand')
   }
 
-  // ── Week lookup table helpers ──────────────────────────────────────────────
+  // ── Week lookup helpers ────────────────────────────────────────────────────
 
   function updateWeekRow(idx: number, field: keyof WeekLookupRow, value: number) {
     const next = config.weekLookupTable.map((r, i) =>
@@ -165,7 +235,7 @@ export default function PricingConfigPanel({ initialConfig }: PricingConfigPanel
     update('weekLookupTable', config.weekLookupTable.filter((_, i) => i !== idx))
   }
 
-  // ── Tier2 lookup helpers ────────────────────────────────────────────────────
+  // ── Tier 2 lookup helpers ──────────────────────────────────────────────────
 
   function updateTier2Row(idx: number, field: keyof Tier2LookupRow, value: number) {
     const next = config.tier2Lookup.map((r, i) =>
@@ -189,23 +259,23 @@ export default function PricingConfigPanel({ initialConfig }: PricingConfigPanel
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
 
-      {/* Top action bar */}
+      {/* ── Action bar ───────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          {status && (
-            <div
-              className={`text-xs px-3 py-2 rounded-lg border ${
-                status.type === 'success'
-                  ? 'bg-green-50 border-green-200 text-green-800'
-                  : 'bg-red-50 border-red-200 text-red-700'
-              }`}
-            >
-              {status.message}
-            </div>
-          )}
-        </div>
+        {saveStatus ? (
+          <div
+            className={`text-xs px-3 py-2 rounded-lg border ${
+              saveStatus.type === 'success'
+                ? 'bg-green-50 border-green-200 text-green-800'
+                : 'bg-red-50 border-red-200 text-red-700'
+            }`}
+          >
+            {saveStatus.message}
+          </div>
+        ) : (
+          <div />
+        )}
         <div className="flex items-center gap-2 ml-auto">
           <button
             type="button"
@@ -228,72 +298,38 @@ export default function PricingConfigPanel({ initialConfig }: PricingConfigPanel
       {/* ── 1. General Rates ─────────────────────────────────────────────── */}
       <Section
         title="General Rates"
-        description="Day rate and team headcount used across all calculations"
+        description="hourly rate and team size applied across all calculations"
       >
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
-          <Field label="Day Rate ($/hr)">
-            <NumInput
-              value={config.dayRate}
-              onChange={(v) => update('dayRate', v)}
-              min={1}
-              step={1}
-            />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <Field label="Hourly Rate ($)">
+            <NumInput value={config.dayRate} onChange={(v) => update('dayRate', v)} min={1} />
           </Field>
-          <Field label="Core Headcount (R7)">
-            <NumInput
-              value={config.coreHeadcount}
-              onChange={(v) => update('coreHeadcount', v)}
-              min={1}
-            />
+          <Field label="Core Team Size">
+            <NumInput value={config.coreHeadcount} onChange={(v) => update('coreHeadcount', v)} min={1} />
           </Field>
-          <Field label="Integration Headcount (S7)">
-            <NumInput
-              value={config.intHeadcount}
-              onChange={(v) => update('intHeadcount', v)}
-              min={1}
-            />
+          <Field label="Integration Team Size">
+            <NumInput value={config.intHeadcount} onChange={(v) => update('intHeadcount', v)} min={1} />
           </Field>
-          <Field label="Working Days / Week (S9)">
-            <NumInput
-              value={config.workingDaysPerWeek}
-              onChange={(v) => update('workingDaysPerWeek', v)}
-              min={1}
-              step={1}
-            />
+          <Field label="Working Days per Week">
+            <NumInput value={config.workingDaysPerWeek} onChange={(v) => update('workingDaysPerWeek', v)} min={1} />
           </Field>
-          <Field label="Integration FTE">
-            <NumInput
-              value={config.integrationFte}
-              onChange={(v) => update('integrationFte', v)}
-              min={1}
-            />
+          <Field label="Integration Team FTE">
+            <NumInput value={config.integrationFte} onChange={(v) => update('integrationFte', v)} min={1} />
           </Field>
-          <Field label="Deployment / Training Hrs / Week">
-            <NumInput
-              value={config.deploymentHoursPerWeek}
-              onChange={(v) => update('deploymentHoursPerWeek', v)}
-              min={1}
-            />
+          <Field label="Deployment & Training Hours per Week">
+            <NumInput value={config.deploymentHoursPerWeek} onChange={(v) => update('deploymentHoursPerWeek', v)} min={1} />
           </Field>
         </div>
       </Section>
 
       {/* ── 2. Training ──────────────────────────────────────────────────── */}
-      <Section title="Training" description="Fixed fee charged when training is included">
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
-          <Field label="Training List Price ($)">
-            <NumInput
-              value={config.trainingListPrice}
-              onChange={(v) => update('trainingListPrice', v)}
-              min={0}
-            />
+      <Section title="Training" description="fixed fee charged when training is included">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <Field label="List Price ($)">
+            <NumInput value={config.trainingListPrice} onChange={(v) => update('trainingListPrice', v)} min={0} />
           </Field>
-          <Field label="Training Duration (weeks)">
-            <NumInput
-              value={config.trainingWeeks}
-              onChange={(v) => update('trainingWeeks', v)}
-              min={1}
-            />
+          <Field label="Duration (weeks)">
+            <NumInput value={config.trainingWeeks} onChange={(v) => update('trainingWeeks', v)} min={1} />
           </Field>
         </div>
       </Section>
@@ -301,25 +337,25 @@ export default function PricingConfigPanel({ initialConfig }: PricingConfigPanel
       {/* ── 3. Deployment Options ────────────────────────────────────────── */}
       <Section
         title="Deployment Options"
-        description="List price and implementation weeks for each deployment type"
+        description="list price and implementation weeks per deployment type"
       >
-        <div className="mt-4 overflow-x-auto">
+        <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-gray-100">
-                <th className="text-left pb-2 text-gray-400 font-medium pr-4">Deployment Type</th>
-                <th className="text-left pb-2 text-gray-400 font-medium w-32 pr-3">Price ($)</th>
-                <th className="text-left pb-2 text-gray-400 font-medium w-24 pr-3">Weeks</th>
-                <th className="text-left pb-2 text-gray-400 font-medium w-28">On Demand</th>
+                <th className="text-left pb-2 pt-1 text-gray-400 font-medium pr-4">Deployment Type</th>
+                <th className="text-left pb-2 pt-1 text-gray-400 font-medium w-32 pr-3">Price ($)</th>
+                <th className="text-left pb-2 pt-1 text-gray-400 font-medium w-24 pr-3">Weeks</th>
+                <th className="text-left pb-2 pt-1 text-gray-400 font-medium w-32">On Demand</th>
               </tr>
             </thead>
             <tbody>
               {config.deploymentOptions.map((opt, idx) => (
                 <tr key={opt.name} className="border-b border-gray-50 last:border-0">
-                  <td className="py-2 pr-4 text-gray-700 font-medium whitespace-nowrap">{opt.name}</td>
+                  <td className="py-2 pr-4 text-gray-700 font-medium">{opt.name}</td>
                   <td className="py-2 pr-3">
                     {opt.price === 'On Demand' ? (
-                      <span className="text-gray-400 italic text-[11px]">On Demand</span>
+                      <span className="text-gray-400 text-[11px]">On Demand</span>
                     ) : (
                       <input
                         type="number"
@@ -333,7 +369,7 @@ export default function PricingConfigPanel({ initialConfig }: PricingConfigPanel
                   </td>
                   <td className="py-2 pr-3">
                     {opt.weeks === 'On Demand' ? (
-                      <span className="text-gray-400 italic text-[11px]">On Demand</span>
+                      <span className="text-gray-400 text-[11px]">On Demand</span>
                     ) : (
                       <input
                         type="number"
@@ -345,7 +381,7 @@ export default function PricingConfigPanel({ initialConfig }: PricingConfigPanel
                     )}
                   </td>
                   <td className="py-2">
-                    <div className="flex gap-2">
+                    <div className="flex gap-3">
                       <label className="flex items-center gap-1.5 cursor-pointer">
                         <input
                           type="checkbox"
@@ -375,53 +411,56 @@ export default function PricingConfigPanel({ initialConfig }: PricingConfigPanel
 
       {/* ── 4. Integration Weights ───────────────────────────────────────── */}
       <Section
-        title="Integration Weights (Detailed Calculator)"
-        description="Multipliers used in the H7 integration weeks formula"
+        title="Integration Weights"
+        description="multipliers applied to integration counts when calculating delivery weeks"
       >
-        <div className="mt-4 space-y-5">
+        <div className="space-y-5">
           <div>
-            <p className="text-xs font-medium text-gray-500 mb-3">Base Weight</p>
+            <SubLabel>Base Weight</SubLabel>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              <Field label="W3 — Base Integration Weight">
+              <Field label="Base Integration Weight">
                 <NumInput value={config.w3BaseWeight} onChange={(v) => update('w3BaseWeight', v)} step={0.1} />
               </Field>
             </div>
           </div>
+
           <div>
-            <p className="text-xs font-medium text-gray-500 mb-3">Integration Type Weights</p>
+            <SubLabel>Integration Type</SubLabel>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              <Field label="W4 — REST / JSON">
+              <Field label="REST / JSON">
                 <NumInput value={config.w4Rest} onChange={(v) => update('w4Rest', v)} step={0.1} />
               </Field>
-              <Field label="W5 — SOAP / XML">
+              <Field label="SOAP / XML">
                 <NumInput value={config.w5Soap} onChange={(v) => update('w5Soap', v)} step={0.1} />
               </Field>
-              <Field label="W6 — Database / Proprietary">
+              <Field label="Database / Proprietary">
                 <NumInput value={config.w6Db} onChange={(v) => update('w6Db', v)} step={0.1} />
               </Field>
             </div>
           </div>
+
           <div>
-            <p className="text-xs font-medium text-gray-500 mb-3">Integration Status Weights</p>
+            <SubLabel>Integration Status</SubLabel>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              <Field label="W7 — Existing Opus Library">
+              <Field label="Existing Opus Library">
                 <NumInput value={config.w7Library} onChange={(v) => update('w7Library', v)} step={0.1} />
               </Field>
-              <Field label="W8 — Modification">
+              <Field label="Modification to Existing">
                 <NumInput value={config.w8Modification} onChange={(v) => update('w8Modification', v)} step={0.1} />
               </Field>
-              <Field label="W9 — New Integration">
+              <Field label="New Integration">
                 <NumInput value={config.w9New} onChange={(v) => update('w9New', v)} step={0.1} />
               </Field>
             </div>
           </div>
+
           <div>
-            <p className="text-xs font-medium text-gray-500 mb-3">Simple Calculator — Integration Bases</p>
+            <SubLabel>Simple Calculator Bases</SubLabel>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              <Field label="M28 — Standard API Base Weeks">
+              <Field label="Standard API — Base Weeks">
                 <NumInput value={config.m28StandardBase} onChange={(v) => update('m28StandardBase', v)} step={0.1} />
               </Field>
-              <Field label="O28 — Custom Build Base Weeks">
+              <Field label="Custom Build — Base Weeks">
                 <NumInput value={config.o28CustomBase} onChange={(v) => update('o28CustomBase', v)} step={0.1} />
               </Field>
             </div>
@@ -429,18 +468,18 @@ export default function PricingConfigPanel({ initialConfig }: PricingConfigPanel
         </div>
       </Section>
 
-      {/* ── 5. Week Lookup Tables ────────────────────────────────────────── */}
+      {/* ── 5. Delivery Week Schedules ───────────────────────────────────── */}
       <Section
-        title="Delivery Week Lookup Tables"
-        description="VLOOKUP tables mapping use-case counts to delivery weeks (Excel L:O rows 5–22)"
+        title="Delivery Week Schedules"
+        description="maps use-case count ranges to estimated delivery weeks"
         defaultOpen={false}
       >
-        <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-1">
 
-          {/* Tier 1 + shared table */}
+          {/* Linear Automation (Tier 1) */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-medium text-gray-700">Combined Lookup Table <span className="text-gray-400">(Tier 1 + Tier 2 weeks)</span></p>
+              <p className="text-xs font-medium text-gray-700">Linear Automation Use Cases</p>
               <button
                 type="button"
                 onClick={addWeekRow}
@@ -453,10 +492,16 @@ export default function PricingConfigPanel({ initialConfig }: PricingConfigPanel
               <table className="w-full text-xs border border-gray-200 rounded-lg overflow-hidden">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-3 py-2 text-left text-gray-400 font-medium border-b border-gray-200">Count Floor</th>
-                    <th className="px-3 py-2 text-left text-gray-400 font-medium border-b border-gray-200">Tier 1 Weeks</th>
-                    <th className="px-3 py-2 text-left text-gray-400 font-medium border-b border-gray-200">Tier 2 Weeks</th>
-                    <th className="px-3 py-2 border-b border-gray-200 w-8"></th>
+                    <th className="px-3 py-2 text-left text-gray-400 font-medium border-b border-gray-200">
+                      Use Case Count (min)
+                    </th>
+                    <th className="px-3 py-2 text-left text-gray-400 font-medium border-b border-gray-200">
+                      Tier 1 Weeks
+                    </th>
+                    <th className="px-3 py-2 text-left text-gray-400 font-medium border-b border-gray-200">
+                      Tier 2 Weeks
+                    </th>
+                    <th className="px-3 py-2 border-b border-gray-200 w-8" />
                   </tr>
                 </thead>
                 <tbody>
@@ -497,7 +542,9 @@ export default function PricingConfigPanel({ initialConfig }: PricingConfigPanel
                           className="text-gray-300 hover:text-red-400 disabled:opacity-30 transition-colors"
                           title="Remove row"
                         >
-                          ✕
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
                         </button>
                       </td>
                     </tr>
@@ -505,13 +552,15 @@ export default function PricingConfigPanel({ initialConfig }: PricingConfigPanel
                 </tbody>
               </table>
             </div>
-            <p className="text-[10px] text-gray-400 mt-1.5">Rows must be sorted by Count Floor ascending for VLOOKUP to work correctly.</p>
+            <p className="text-[10px] text-gray-400 mt-1.5">
+              Rows must be sorted by count ascending.
+            </p>
           </div>
 
-          {/* Tier 2 dedicated lookup */}
+          {/* Agentic AI (Tier 2) */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-medium text-gray-700">Tier 2 Dedicated Lookup <span className="text-gray-400">(Excel N:O)</span></p>
+              <p className="text-xs font-medium text-gray-700">Agentic AI Use Cases</p>
               <button
                 type="button"
                 onClick={addTier2Row}
@@ -524,9 +573,13 @@ export default function PricingConfigPanel({ initialConfig }: PricingConfigPanel
               <table className="w-full text-xs border border-gray-200 rounded-lg overflow-hidden">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-3 py-2 text-left text-gray-400 font-medium border-b border-gray-200">Count Floor</th>
-                    <th className="px-3 py-2 text-left text-gray-400 font-medium border-b border-gray-200">Weeks</th>
-                    <th className="px-3 py-2 border-b border-gray-200 w-8"></th>
+                    <th className="px-3 py-2 text-left text-gray-400 font-medium border-b border-gray-200">
+                      Use Case Count (min)
+                    </th>
+                    <th className="px-3 py-2 text-left text-gray-400 font-medium border-b border-gray-200">
+                      Weeks
+                    </th>
+                    <th className="px-3 py-2 border-b border-gray-200 w-8" />
                   </tr>
                 </thead>
                 <tbody>
@@ -558,7 +611,9 @@ export default function PricingConfigPanel({ initialConfig }: PricingConfigPanel
                           className="text-gray-300 hover:text-red-400 disabled:opacity-30 transition-colors"
                           title="Remove row"
                         >
-                          ✕
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
                         </button>
                       </td>
                     </tr>
@@ -566,13 +621,119 @@ export default function PricingConfigPanel({ initialConfig }: PricingConfigPanel
                 </tbody>
               </table>
             </div>
-            <p className="text-[10px] text-gray-400 mt-1.5">Rows must be sorted by Count Floor ascending for VLOOKUP to work correctly.</p>
+            <p className="text-[10px] text-gray-400 mt-1.5">
+              Rows must be sorted by count ascending.
+            </p>
           </div>
         </div>
       </Section>
 
-      {/* Bottom save bar */}
-      <div className="flex items-center justify-end gap-3 pt-2">
+      {/* ── GM Defaults ──────────────────────────────────────────────────── */}
+      <Section
+        title="GM Calculator Defaults"
+        description="Default guardrails and role rates pre-loaded into the GM calculator"
+        defaultOpen={false}
+      >
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <Field label="Target Gross Margin (%)">
+              <NumInput
+                value={gmConfig.targetGm}
+                onChange={(v) => updateGm('targetGm', v)}
+                min={0}
+                step={0.1}
+              />
+            </Field>
+            <Field label="Review Band (pts below target)">
+              <NumInput
+                value={gmConfig.reviewBand}
+                onChange={(v) => updateGm('reviewBand', v)}
+                min={0}
+                step={0.1}
+              />
+            </Field>
+            <Field label="Approval Band (pts below target)">
+              <NumInput
+                value={gmConfig.approvalBand}
+                onChange={(v) => updateGm('approvalBand', v)}
+                min={0}
+                step={0.1}
+              />
+            </Field>
+          </div>
+
+          <div>
+            <SubLabel>Default Roles</SubLabel>
+            <div className="overflow-x-auto rounded-md border border-gray-200">
+              <table className="w-full text-xs min-w-[500px]">
+                <thead>
+                  <tr className="border-b border-gray-200 bg-gray-50">
+                    {['Role', 'Daily Cost ($)', 'Day Rate ($)', ''].map((h) => (
+                      <th key={h} className="px-3 py-2 text-left font-medium text-gray-400">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {gmConfig.defaultRoles.map((r, idx) => (
+                    <tr key={idx} className="border-b border-gray-100 last:border-0">
+                      <td className="px-2 py-1">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={r.role}
+                          placeholder="Role name"
+                          onChange={(e) => updateGmRole(idx, 'role', e.target.value)}
+                        />
+                      </td>
+                      <td className="px-2 py-1">
+                        <input
+                          type="number"
+                          className={numInputCls}
+                          value={r.dailyCost}
+                          min={0}
+                          onChange={(e) => updateGmRole(idx, 'dailyCost', Number(e.target.value))}
+                        />
+                      </td>
+                      <td className="px-2 py-1">
+                        <input
+                          type="number"
+                          className={numInputCls}
+                          value={r.standardRate}
+                          min={0}
+                          onChange={(e) => updateGmRole(idx, 'standardRate', Number(e.target.value))}
+                        />
+                      </td>
+                      <td className="px-2 py-1 text-center">
+                        <button
+                          type="button"
+                          onClick={() => removeGmRole(idx)}
+                          disabled={gmConfig.defaultRoles.length <= 1}
+                          className="text-gray-300 hover:text-red-400 disabled:opacity-30 transition-colors"
+                          title="Remove role"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <button
+              type="button"
+              onClick={addGmRole}
+              className="mt-2 text-xs text-indigo-600 hover:text-indigo-800 font-medium transition-colors flex items-center gap-1"
+            >
+              <span className="text-base leading-none">+</span> Add Role
+            </button>
+          </div>
+        </div>
+      </Section>
+
+      {/* ── Bottom save ──────────────────────────────────────────────────── */}
+      <div className="flex items-center justify-end gap-2 pt-1">
         <button
           type="button"
           onClick={resetToDefaults}

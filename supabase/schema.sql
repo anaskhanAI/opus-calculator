@@ -164,6 +164,52 @@ insert into public.pricing_config (id, config, updated_by)
 values (1, '{}', 'system')
 on conflict (id) do nothing;
 
+-- ─── GM CONFIG ────────────────────────────────────────────────────────────────
+-- Single-row table storing GM calculator defaults (target margin, approval bands,
+-- default role definitions with daily cost and standard rate).
+create table if not exists public.gm_config (
+  id         int primary key default 1,
+  config     jsonb not null default '{}',
+  updated_at timestamptz default now(),
+  updated_by text
+);
+
+alter table public.gm_config enable row level security;
+
+drop policy if exists "Authenticated can read gm config" on public.gm_config;
+create policy "Authenticated can read gm config"
+  on public.gm_config for select
+  using (auth.role() = 'authenticated');
+
+insert into public.gm_config (id, config, updated_by)
+values (1, '{}', 'system')
+on conflict (id) do nothing;
+
+-- ─── GM SCENARIOS ─────────────────────────────────────────────────────────────
+-- Saved GM discount analysis snapshots. May be linked to a pricing quote.
+create table if not exists public.gm_scenarios (
+  id           uuid default uuid_generate_v4() primary key,
+  quote_id     uuid references public.quotes(id) on delete set null,
+  quote_ref    text,
+  client_name  text,
+  project_name text,
+  inputs       jsonb not null,
+  outputs      jsonb not null,
+  notes        text,
+  created_at   timestamptz default now(),
+  created_by   text
+);
+
+alter table public.gm_scenarios enable row level security;
+
+drop policy if exists "Admins can read gm scenarios" on public.gm_scenarios;
+create policy "Admins can read gm scenarios"
+  on public.gm_scenarios for select
+  using (auth.role() = 'authenticated');
+
+create index if not exists gm_scenarios_quote_id_idx  on public.gm_scenarios(quote_id);
+create index if not exists gm_scenarios_created_at_idx on public.gm_scenarios(created_at desc);
+
 -- ─── GRANT ADMIN ACCESS ───────────────────────────────────────────────────────
 -- After running this script, elevate a user to admin by running:
 --
