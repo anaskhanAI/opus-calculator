@@ -127,11 +127,20 @@ export interface QuoteFilters {
 
 export type GmSignal = 'SAFE' | 'REVIEW' | 'APPROVAL' | 'ESCALATE'
 
+export interface GmRoleAllocations {
+  coreImpl: number      // % of coreImplementation.hours → days
+  integrations: number  // % of integrations.hours → days
+  deployment: number    // % of deployment.hours → days
+  training: number      // % of training.hours → days
+  complexity: number    // % of complexityFactor.hours → days
+}
+
 export interface GmRole {
   role: string
   days: number
   dailyCost: number
   standardRate: number
+  allocations?: GmRoleAllocations
 }
 
 export interface GmConfig {

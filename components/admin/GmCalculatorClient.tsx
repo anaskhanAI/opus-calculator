@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useMemo, useCallback } from 'react'
-import type { GmConfig, GmInputs, GmSavedScenario, Quote } from '@/lib/types'
-import { calculateGm } from '@/lib/gm-engine'
+import type { GmConfig, GmInputs, GmSavedScenario, DetailedInputs } from '@/lib/types'
+import type { GmQuote } from '@/app/admin/gm/page'
+import { calculateGm, deriveGmDaysFromQuote } from '@/lib/gm-engine'
 import GmRolesTable from './GmRolesTable'
 import GmResultsPanel from './GmResultsPanel'
 import GmSavedScenarios from './GmSavedScenarios'
@@ -10,7 +11,8 @@ import GmSavedScenarios from './GmSavedScenarios'
 interface Props {
   gmConfig: GmConfig
   initialScenarios: GmSavedScenario[]
-  quotes: Pick<Quote, 'id' | 'quoteRef' | 'clientName' | 'projectName' | 'totalPrice' | 'totalHours' | 'createdAt'>[]
+  quotes: GmQuote[]
+  initialLinkedQuote?: GmQuote | null
 }
 
 const inputCls =
@@ -19,8 +21,21 @@ const numCls =
   inputCls +
   ' [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
 
-export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes }: Props) {
-  const [inputs, setInputs] = useState<GmInputs>({
+// Build GmInputs from a quote, applying allocation-based day distribution and
+// pulling the requested discount from the quote's inputs.
+function inputsFromQuote(quote: GmQuote, gmConfig: GmConfig): Partial<GmInputs> {
+  const roles = deriveGmDaysFromQuote(quote.outputs, gmConfig.defaultRoles)
+  const requestedDiscount = (quote.inputs as DetailedInputs).requestedDiscount ?? 0
+  return {
+    roles,
+    discountType: requestedDiscount > 0 ? 'Amount' : 'Percent',
+    discountAmount: requestedDiscount > 0 ? requestedDiscount : 0,
+    discountPercent: 0,
+  }
+}
+
+function buildInitialInputs(gmConfig: GmConfig, initialLinkedQuote?: GmQuote | null): GmInputs {
+  const base: GmInputs = {
     roles: gmConfig.defaultRoles.map((r) => ({ ...r })),
     discountType: 'Percent',
     discountPercent: 0,
@@ -28,9 +43,17 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes 
     targetGm: gmConfig.targetGm,
     reviewBand: gmConfig.reviewBand,
     approvalBand: gmConfig.approvalBand,
-  })
+  }
+  if (!initialLinkedQuote) return base
+  return { ...base, ...inputsFromQuote(initialLinkedQuote, gmConfig) }
+}
 
-  const [linkedQuote, setLinkedQuote] = useState<Props['quotes'][number] | null>(null)
+export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes, initialLinkedQuote }: Props) {
+  const [inputs, setInputs] = useState<GmInputs>(() =>
+    buildInitialInputs(gmConfig, initialLinkedQuote)
+  )
+
+  const [linkedQuote, setLinkedQuote] = useState<GmQuote | null>(initialLinkedQuote ?? null)
   const [showQuoteDropdown, setShowQuoteDropdown] = useState(false)
   const [quoteSearch, setQuoteSearch] = useState('')
 
@@ -59,14 +82,24 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes 
     )
   }, [quotes, quoteSearch])
 
-  function linkQuote(q: Props['quotes'][number]) {
+  function linkQuote(q: GmQuote) {
     setLinkedQuote(q)
     setShowQuoteDropdown(false)
     setQuoteSearch('')
+    // Auto-populate days and discount from the quote
+    setInputs((prev) => ({ ...prev, ...inputsFromQuote(q, gmConfig) }))
   }
 
   function unlinkQuote() {
     setLinkedQuote(null)
+    // Reset roles to defaults (days = 0) and clear discount
+    setInputs((prev) => ({
+      ...prev,
+      roles: gmConfig.defaultRoles.map((r) => ({ ...r })),
+      discountType: 'Percent',
+      discountPercent: 0,
+      discountAmount: 0,
+    }))
   }
 
   // ── Save scenario ──────────────────────────────────────────────────────────
@@ -255,6 +288,11 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes 
           {/* Discount */}
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Discount</h3>
+            {linkedQuote && (inputs.discountType === 'Amount' || inputs.discountAmount > 0) && (
+              <p className="text-[10px] text-indigo-500 mb-2">
+                Pre-filled from quote {linkedQuote.quoteRef}. Edit as needed.
+              </p>
+            )}
             <div className="grid grid-cols-2 gap-2 mb-3">
               {(['Percent', 'Amount'] as const).map((t) => (
                 <button
@@ -305,7 +343,14 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes 
 
           {/* Roles */}
           <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Team &amp; Effort</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Team &amp; Effort</h3>
+              {linkedQuote && (
+                <span className="text-[10px] text-indigo-500 font-medium">
+                  Days derived from quote
+                </span>
+              )}
+            </div>
             <GmRolesTable
               roles={inputs.roles}
               onChange={(roles) => updateInput('roles', roles)}
@@ -337,7 +382,7 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes 
             </button>
             {!hasData && (
               <p className="text-[10px] text-gray-400 mt-1.5 text-center">
-                Enter days for at least one role to save.
+                Link a quote or enter days for at least one role to save.
               </p>
             )}
           </div>

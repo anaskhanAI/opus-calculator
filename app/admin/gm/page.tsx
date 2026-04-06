@@ -5,10 +5,16 @@ import type { GmConfig, GmSavedScenario, Quote } from '@/lib/types'
 import AdminNav from '@/components/admin/AdminNav'
 import GmCalculatorClient from '@/components/admin/GmCalculatorClient'
 
+// The subset of Quote data needed by GmCalculatorClient
+export type GmQuote = Pick<
+  Quote,
+  'id' | 'quoteRef' | 'clientName' | 'projectName' | 'totalPrice' | 'totalHours' | 'createdAt' | 'inputs' | 'outputs'
+>
+
 async function fetchData(): Promise<{
   gmConfig: GmConfig
   savedScenarios: GmSavedScenario[]
-  quotes: Pick<Quote, 'id' | 'quoteRef' | 'clientName' | 'projectName' | 'totalPrice' | 'totalHours' | 'createdAt'>[]
+  quotes: GmQuote[]
 }> {
   try {
     const supabase = createServiceClient()
@@ -18,12 +24,16 @@ async function fetchData(): Promise<{
       supabase.from('gm_scenarios').select('*').order('created_at', { ascending: false }),
       supabase
         .from('quotes')
-        .select('id, quote_ref, client_name, project_name, total_price, total_hours, created_at')
+        .select('id, quote_ref, client_name, project_name, total_price, total_hours, created_at, inputs, outputs')
         .order('created_at', { ascending: false }),
     ])
 
     const gmConfig: GmConfig = configResult.data
-      ? { ...DEFAULT_GM_CONFIG, ...(configResult.data.config as Partial<GmConfig>), defaultRoles: (configResult.data.config as Partial<GmConfig>).defaultRoles ?? DEFAULT_GM_CONFIG.defaultRoles }
+      ? {
+          ...DEFAULT_GM_CONFIG,
+          ...(configResult.data.config as Partial<GmConfig>),
+          defaultRoles: (configResult.data.config as Partial<GmConfig>).defaultRoles ?? DEFAULT_GM_CONFIG.defaultRoles,
+        }
       : DEFAULT_GM_CONFIG
 
     const savedScenarios: GmSavedScenario[] = (scenariosResult.data ?? []).map((r) => ({
@@ -39,7 +49,7 @@ async function fetchData(): Promise<{
       createdBy: r.created_by as string | null,
     }))
 
-    const quotes = (quotesResult.data ?? []).map((r) => ({
+    const quotes: GmQuote[] = (quotesResult.data ?? []).map((r) => ({
       id: r.id as string,
       quoteRef: r.quote_ref as string,
       clientName: r.client_name as string,
@@ -47,6 +57,8 @@ async function fetchData(): Promise<{
       totalPrice: r.total_price as number,
       totalHours: r.total_hours as number,
       createdAt: r.created_at as string,
+      inputs: r.inputs as Quote['inputs'],
+      outputs: r.outputs as Quote['outputs'],
     }))
 
     return { gmConfig, savedScenarios, quotes }
@@ -55,8 +67,16 @@ async function fetchData(): Promise<{
   }
 }
 
-export default async function AdminGmPage() {
+export default async function AdminGmPage({
+  searchParams,
+}: {
+  searchParams?: { quoteId?: string }
+}) {
   const { gmConfig, savedScenarios, quotes } = await fetchData()
+
+  const initialLinkedQuote = searchParams?.quoteId
+    ? (quotes.find((q) => q.id === searchParams.quoteId) ?? null)
+    : null
 
   return (
     <div className="mx-auto max-w-screen-xl px-4 sm:px-6 py-5">
@@ -79,6 +99,7 @@ export default async function AdminGmPage() {
         gmConfig={gmConfig}
         initialScenarios={savedScenarios}
         quotes={quotes}
+        initialLinkedQuote={initialLinkedQuote}
       />
     </div>
   )

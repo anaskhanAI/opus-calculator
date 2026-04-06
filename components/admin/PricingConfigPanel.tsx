@@ -729,6 +729,44 @@ export default function PricingConfigPanel({ initialConfig, initialGmConfig }: P
               <span className="text-base leading-none">+</span> Add Role
             </button>
           </div>
+
+          {/* ── Day allocation matrix (read-only) ───────────────────────── */}
+          <div>
+            <SubLabel>Hour-to-Day Allocation Matrix</SubLabel>
+            <p className="text-[10px] text-gray-400 mb-3">
+              When a quote is linked in the GM Calculator, project hours are converted to days (÷8) and distributed
+              across roles using the percentages below.
+            </p>
+            <div className="overflow-x-auto rounded-md border border-gray-200">
+              <table className="w-full text-xs min-w-[560px]">
+                <thead>
+                  <tr className="border-b border-gray-200 bg-gray-50">
+                    <th className="px-3 py-2 text-left font-medium text-gray-400">Role</th>
+                    {['Core Impl', 'Integrations', 'Deployment', 'Training', 'Complexity'].map((h) => (
+                      <th key={h} className="px-3 py-2 text-center font-medium text-gray-400">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {gmConfig.defaultRoles.map((r, idx) => {
+                    const a = r.allocations
+                    const fmt = (v?: number) =>
+                      v && v > 0 ? `${Math.round(v * 100)}%` : <span className="text-gray-200">—</span>
+                    return (
+                      <tr key={idx} className="border-b border-gray-100 last:border-0">
+                        <td className="px-3 py-2 font-medium text-gray-700">{r.role || '—'}</td>
+                        <td className="px-3 py-2 text-center text-gray-600">{fmt(a?.coreImpl)}</td>
+                        <td className="px-3 py-2 text-center text-gray-600">{fmt(a?.integrations)}</td>
+                        <td className="px-3 py-2 text-center text-gray-600">{fmt(a?.deployment)}</td>
+                        <td className="px-3 py-2 text-center text-gray-600">{fmt(a?.training)}</td>
+                        <td className="px-3 py-2 text-center text-gray-600">{fmt(a?.complexity)}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </Section>
 

@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import Badge from '@/components/ui/Badge'
 import SummaryPanel from '@/components/calculator/SummaryPanel'
 import type { Quote, DetailedInputs, SimpleInputs } from '@/lib/types'
@@ -147,6 +148,20 @@ export default function QuoteDetail({ quote, isAdmin = false }: QuoteDetailProps
           <div className="mt-3 border-t border-gray-100 pt-3">
             <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Notes</p>
             <p className="text-xs text-gray-700 mt-0.5">{quote.notes}</p>
+          </div>
+        )}
+
+        {isAdmin && (
+          <div className="mt-3 border-t border-gray-100 pt-3 flex justify-end">
+            <Link
+              href={`/admin/gm?quoteId=${quote.id}`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-medium hover:bg-indigo-700 transition-colors"
+            >
+              Analyse in GM Calculator
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </Link>
           </div>
         )}
       </div>

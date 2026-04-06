@@ -9,23 +9,53 @@ import type {
   GmConfig,
   GmInputs,
   GmOutputs,
+  GmRole,
   GmRoleResult,
   GmScenario,
   GmSignal,
+  CalculatorOutputs,
 } from './types'
 
 // ─── DEFAULT CONFIG ───────────────────────────────────────────────────────────
+
+// Allocation percentages derived from the distribution table:
+//   Row        | SC     | WE     | PM     | CloudOps
+//   Core Impl  | 33.3%  | 33.3%  | 33.3%  | —
+//   Integrat.  | 25%    | 50%    | 25%    | —
+//   Deployment | —      | —      | 25%    | 75%
+//   Training   | 50%    | 25%    | 25%    | —
+//   Complexity | 33.3%  | 33.3%  | 33.3%  | —
 
 export const DEFAULT_GM_CONFIG: GmConfig = {
   targetGm: 50,
   reviewBand: 10,
   approvalBand: 20,
   defaultRoles: [
-    { role: 'AI Solutions Consultant',          days: 0, dailyCost: 400, standardRate: 1000 },
-    { role: 'AI Workflow/Integration Engineer', days: 0, dailyCost: 300, standardRate: 1000 },
-    { role: 'Project Manager',                  days: 0, dailyCost: 350, standardRate: 1000 },
-    { role: 'Cloud Ops Engineer',               days: 0, dailyCost: 400, standardRate: 1000 },
-    { role: 'AI Solutions Architect',           days: 0, dailyCost: 450, standardRate: 1000 },
+    {
+      role: 'AI Solutions Consultant',
+      days: 0, dailyCost: 400, standardRate: 1000,
+      allocations: { coreImpl: 0.333, integrations: 0.25,  deployment: 0,    training: 0.50,  complexity: 0.333 },
+    },
+    {
+      role: 'AI Workflow/Integration Engineer',
+      days: 0, dailyCost: 300, standardRate: 1000,
+      allocations: { coreImpl: 0.333, integrations: 0.50,  deployment: 0,    training: 0.25,  complexity: 0.333 },
+    },
+    {
+      role: 'Project Manager',
+      days: 0, dailyCost: 350, standardRate: 1000,
+      allocations: { coreImpl: 0.333, integrations: 0.25,  deployment: 0.25, training: 0.25,  complexity: 0.333 },
+    },
+    {
+      role: 'Cloud Ops Engineer',
+      days: 0, dailyCost: 400, standardRate: 1000,
+      allocations: { coreImpl: 0,     integrations: 0,     deployment: 0.75, training: 0,     complexity: 0 },
+    },
+    {
+      role: 'AI Solutions Architect',
+      days: 0, dailyCost: 450, standardRate: 1000,
+      allocations: { coreImpl: 0,     integrations: 0,     deployment: 0,    training: 0,     complexity: 0 },
+    },
   ],
 }
 
@@ -36,6 +66,41 @@ export function resolveGmConfig(partial: Partial<GmConfig> | null | undefined): 
     ...partial,
     defaultRoles: partial.defaultRoles ?? DEFAULT_GM_CONFIG.defaultRoles,
   }
+}
+
+/**
+ * Derives per-role working days from a saved quote's calculator outputs.
+ *
+ * Each output category's hours are converted to days (÷8) then distributed
+ * across roles using the `allocations` percentages stored on each role.
+ * Roles without allocations (or with all-zero allocations) will keep days = 0.
+ */
+export function deriveGmDaysFromQuote(
+  outputs: CalculatorOutputs,
+  roles: GmRole[]
+): GmRole[] {
+  function toFiniteDays(hours: number | 'On Demand'): number {
+    return hours === 'On Demand' || !isFinite(Number(hours)) ? 0 : Number(hours) / 8
+  }
+
+  const coreImplDays    = toFiniteDays(outputs.coreImplementation.hours)
+  const integrationsDays = toFiniteDays(outputs.integrations.hours)
+  const deploymentDays  = toFiniteDays(outputs.deployment.hours)
+  const trainingDays    = toFiniteDays(outputs.training.hours)
+  const complexityDays  = toFiniteDays(outputs.complexityFactor.hours)
+
+  return roles.map((r) => {
+    if (!r.allocations) return { ...r }
+    const a = r.allocations
+    const days = Math.round(
+      coreImplDays    * a.coreImpl    +
+      integrationsDays * a.integrations +
+      deploymentDays  * a.deployment  +
+      trainingDays    * a.training    +
+      complexityDays  * a.complexity
+    )
+    return { ...r, days }
+  })
 }
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
