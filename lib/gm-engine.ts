@@ -16,6 +16,9 @@ import type {
   CalculatorOutputs,
 } from './types'
 
+// Re-export GmRole for convenience (used by GmCalculatorClient)
+export type { GmRole }
+
 // ─── DEFAULT CONFIG ───────────────────────────────────────────────────────────
 
 // Allocation percentages derived from the distribution table:
@@ -103,35 +106,6 @@ export function deriveGmDaysFromQuote(
   })
 }
 
-/**
- * Derives per-role revenue from a saved quote's calculator output list prices.
- * The same allocation percentages used for days are applied to list prices so
- * revenue reflects the actual charged amount per category — not effort × rate.
- */
-export function deriveGmRevenueFromQuote(
-  outputs: CalculatorOutputs,
-  roles: GmRole[]
-): GmRole[] {
-  const coreImplRev     = toFiniteNum(outputs.coreImplementation.listPrice)
-  const integrationsRev = toFiniteNum(outputs.integrations.listPrice)
-  const deploymentRev   = toFiniteNum(outputs.deployment.listPrice)
-  const trainingRev     = toFiniteNum(outputs.training.listPrice)
-  const complexityRev   = toFiniteNum(outputs.complexityFactor.listPrice)
-
-  return roles.map((r) => {
-    if (!r.allocations) return { ...r, quoteRevenue: undefined }
-    const a = r.allocations
-    const quoteRevenue = Math.round(
-      coreImplRev     * a.coreImpl     +
-      integrationsRev * a.integrations +
-      deploymentRev   * a.deployment   +
-      trainingRev     * a.training     +
-      complexityRev   * a.complexity
-    )
-    return { ...r, quoteRevenue }
-  })
-}
-
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 
 function gmSignal(
@@ -152,149 +126,98 @@ function gmSignal(
 function buildAdjustmentHint(
   actualGm: number,
   targetGm: number,
-  dealPrice: number,
-  listPrice: number,
-  totalCost: number
+  discountedPrice: number,
+  totalCost: number,
+  requestedDiscount: number
 ): string {
-  if (totalCost === 0 && dealPrice === 0) return ''
+  if (totalCost === 0 && discountedPrice === 0) return ''
 
   const tgt = targetGm / 100
   const gmGap = tgt - actualGm
 
-  if (gmGap <= 0) {
-    if (dealPrice > listPrice && listPrice > 0) {
-      const pct = ((dealPrice - listPrice) / listPrice) * 100
-      return `Charging ${pct.toFixed(1)}% above list price. GM is at or above target.`
-    }
-    return 'GM is at or above target.'
-  }
+  if (gmGap <= 0) return 'GM is at or above target.'
 
   const minPrice = totalCost > 0 ? totalCost / (1 - tgt) : 0
+  const maxDiscount = (discountedPrice + requestedDiscount) - minPrice
 
-  if (dealPrice < listPrice && listPrice > 0) {
-    const gap = minPrice - dealPrice
-    if (gap > 0) {
-      return `Deal price is below list and below the minimum needed. Increase deal price by ${fmtCurrency(gap)} to reach the target GM of ${targetGm}%.`
-    }
-    return `Deal price is below list but still above the minimum needed for ${targetGm}% GM.`
-  }
-
-  if (listPrice === 0) {
-    const uplift = minPrice - dealPrice
-    if (uplift > 0) {
-      return `Increase deal price by ${fmtCurrency(uplift)} to reach the target GM of ${targetGm}%.`
+  if (requestedDiscount > 0 && maxDiscount >= 0) {
+    const reduceBy = minPrice - discountedPrice
+    if (reduceBy > 0) {
+      return `Reduce discount by ${fmtCurrency(reduceBy)} to reach the target GM of ${targetGm}%.`
     }
   }
 
-  return `Minimum deal price to reach ${targetGm}% GM is ${fmtCurrency(minPrice)}.`
+  return `Minimum price to reach ${targetGm}% GM is ${fmtCurrency(minPrice)}.`
 }
 
 // ─── MAIN CALC ────────────────────────────────────────────────────────────────
 
 export function calculateGm(inputs: GmInputs): GmOutputs {
-  const { roles, dealPrice, listPrice, requestedDiscount, targetGm, reviewBand, approvalBand } = inputs
+  const { roles, listPrice, requestedDiscount, targetGm, reviewBand, approvalBand } = inputs
 
   const totalDays = roles.reduce((a, r) => a + r.days, 0)
 
-  // Per-role revenue: use quoteRevenue if linked, else days × standardRate
-  let totalListRevenue = 0
+  // Per-role economics: revenue is always days × standardRate
+  let totalRevenue = 0
   let totalCost = 0
 
   const roleResults: GmRoleResult[] = roles.map((r) => {
-    const standardRevenue = r.quoteRevenue ?? (r.days * r.standardRate)
+    const revenue = r.days * r.standardRate
     const cost = r.days * r.dailyCost
     const effortPct = totalDays === 0 ? 0 : r.days / totalDays
+    const gmPct = revenue === 0 ? 0 : (revenue - cost) / revenue
 
-    const tgt = targetGm / 100
-    const gmPct = standardRevenue === 0 ? 0 : (standardRevenue - cost) / standardRevenue
-    const inputGmPct = gmPct // at list price (before deal price adjustment)
-    const minRev = 1 - tgt === 0 ? 0 : cost / (1 - tgt)
-
-    totalListRevenue += standardRevenue
+    totalRevenue += revenue
     totalCost += cost
 
-    return {
-      ...r,
-      standardRevenue,
-      effortPct,
-      cost,
-      gmPct,
-      inputGmPct,
-      minRev,
-    }
+    return { ...r, revenue, effortPct, cost, gmPct }
   })
 
-  // Discounted price = list price minus requested discount (dollar amount)
-  const discountedPrice = listPrice > 0 && requestedDiscount > 0
-    ? listPrice - requestedDiscount
-    : listPrice
+  // Discounted price = list price minus requested discount
+  const effectiveListPrice = listPrice > 0 ? listPrice : totalRevenue
+  const discountedPrice = requestedDiscount > 0
+    ? effectiveListPrice - requestedDiscount
+    : effectiveListPrice
 
-  // Overall GM is driven by the deal price the admin controls
-  const effectiveDealPrice = dealPrice > 0 ? dealPrice : totalListRevenue
-  const actualGm =
-    effectiveDealPrice === 0
-      ? 0
-      : (effectiveDealPrice - totalCost) / effectiveDealPrice
-
-  const tgt = targetGm / 100
-  const grossProfit = effectiveDealPrice - totalCost
-  const minPriceAtTarget = 1 - tgt === 0 ? 0 : totalCost / (1 - tgt)
-
-  // How far above list price you could go and still be at exactly target GM
-  // (usually 0 or positive if list price already > minPrice)
-  const maxPremiumAboveList = Math.max(0, totalListRevenue - minPriceAtTarget)
-
-  const priceDelta = effectiveDealPrice - listPrice
+  // GM is driven by the discounted price (what the client actually pays)
+  const actualGm = discountedPrice === 0 ? 0 : (discountedPrice - totalCost) / discountedPrice
+  const grossProfit = discountedPrice - totalCost
 
   const signal = gmSignal(actualGm, targetGm, reviewBand, approvalBand)
 
-  const buildScenarioGm = (revenue: number): number =>
-    revenue === 0 ? 0 : (revenue - totalCost) / revenue
+  const tgt = targetGm / 100
+  const buildScenarioGm = (price: number): number =>
+    price === 0 ? 0 : (price - totalCost) / price
 
   const scenarios: GmScenario[] = [
     {
       name: 'At List Price',
-      revenue: totalListRevenue,
-      gm: buildScenarioGm(totalListRevenue),
-      delta: totalListRevenue - listPrice,
-      signal: gmSignal(buildScenarioGm(totalListRevenue), targetGm, reviewBand, approvalBand),
+      revenue: effectiveListPrice,
+      gm: buildScenarioGm(effectiveListPrice),
+      delta: 0,
+      signal: gmSignal(buildScenarioGm(effectiveListPrice), targetGm, reviewBand, approvalBand),
     },
     {
-      name: 'Current Deal',
-      revenue: effectiveDealPrice,
+      name: 'With Discount',
+      revenue: discountedPrice,
       gm: actualGm,
-      delta: priceDelta,
+      delta: -requestedDiscount,
       signal,
-    },
-    {
-      name: 'Min @ Target GM',
-      revenue: minPriceAtTarget,
-      gm: tgt,
-      delta: minPriceAtTarget - listPrice,
-      signal: gmSignal(tgt, targetGm, reviewBand, approvalBand),
     },
   ]
 
   const adjustmentHint = buildAdjustmentHint(
-    actualGm,
-    targetGm,
-    effectiveDealPrice,
-    listPrice,
-    totalCost
+    actualGm, targetGm, discountedPrice, totalCost, requestedDiscount
   )
 
   return {
     totalDays,
-    totalListRevenue,
-    dealPrice: effectiveDealPrice,
-    listPrice,
+    totalRevenue,
+    listPrice: effectiveListPrice,
     discountedPrice,
-    priceDelta,
     totalCost,
     grossProfit,
     actualGm,
-    minPriceAtTarget,
-    maxPremiumAboveList,
     signal,
     roles: roleResults,
     scenarios,

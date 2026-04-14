@@ -139,8 +139,7 @@ export interface GmRole {
   role: string
   days: number
   dailyCost: number
-  standardRate: number      // used in manual mode (no quote linked) for revenue
-  quoteRevenue?: number     // set when quote linked; overrides days × standardRate in the economics table
+  standardRate: number      // day rate used for revenue calculation (days × standardRate)
   allocations?: GmRoleAllocations
 }
 
@@ -153,8 +152,7 @@ export interface GmConfig {
 
 export interface GmInputs {
   roles: GmRole[]
-  dealPrice: number         // the actual price being charged to the client (admin-controlled)
-  listPrice: number         // reference: quote.totalPrice or sum(days×standardRate) in manual mode
+  listPrice: number         // pre-discount total from quote or manual entry
   requestedDiscount: number // dollar discount requested by client
   targetGm: number
   reviewBand: number
@@ -162,12 +160,10 @@ export interface GmInputs {
 }
 
 export interface GmRoleResult extends GmRole {
-  standardRevenue: number   // quoteRevenue if linked, else days × standardRate
+  revenue: number           // days × standardRate
   effortPct: number
   cost: number
-  gmPct: number             // role-level GM based on standardRevenue
-  inputGmPct: number        // role-level GM at list price (before any deal price adjustment)
-  minRev: number            // min revenue for this role to hit target GM
+  gmPct: number             // role-level GM: (revenue - cost) / revenue
 }
 
 export interface GmScenario {
@@ -180,16 +176,12 @@ export interface GmScenario {
 
 export interface GmOutputs {
   totalDays: number
-  totalListRevenue: number    // sum of per-role standardRevenue (from quote or days×rate)
-  dealPrice: number           // the actual charged price (from inputs)
-  listPrice: number           // reference list price (from inputs)
+  totalRevenue: number        // sum of per-role revenue (days × standardRate)
+  listPrice: number           // pre-discount list price
   discountedPrice: number     // listPrice - requestedDiscount
-  priceDelta: number          // dealPrice - listPrice
   totalCost: number
-  grossProfit: number         // dealPrice - totalCost
-  actualGm: number            // (dealPrice - totalCost) / dealPrice
-  minPriceAtTarget: number    // min dealPrice to hit targetGm
-  maxPremiumAboveList: number // how much above list price is still "safe"
+  grossProfit: number         // discountedPrice - totalCost
+  actualGm: number            // (discountedPrice - totalCost) / discountedPrice
   signal: GmSignal
   roles: GmRoleResult[]
   scenarios: GmScenario[]

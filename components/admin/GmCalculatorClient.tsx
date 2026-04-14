@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import type { GmConfig, GmInputs, GmSavedScenario } from '@/lib/types'
 import type { GmQuote } from '@/app/admin/gm/page'
-import { calculateGm, deriveGmDaysFromQuote, deriveGmRevenueFromQuote, fmtCurrency } from '@/lib/gm-engine'
+import { calculateGm, deriveGmDaysFromQuote, fmtCurrency } from '@/lib/gm-engine'
 import GmRolesTable from './GmRolesTable'
 import GmResultsPanel from './GmResultsPanel'
 import GmSavedScenarios from './GmSavedScenarios'
@@ -22,16 +22,13 @@ const numCls =
   ' [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
 
 function inputsFromQuote(quote: GmQuote, gmConfig: GmConfig): Partial<GmInputs> {
-  // Both days AND revenue are derived from quote outputs using the allocation matrix
-  const rolesWithDays    = deriveGmDaysFromQuote(quote.outputs, gmConfig.defaultRoles)
-  const rolesWithRevenue = deriveGmRevenueFromQuote(quote.outputs, rolesWithDays)
+  const rolesWithDays = deriveGmDaysFromQuote(quote.outputs, gmConfig.defaultRoles)
   const rawListPrice = quote.outputs?.projectTotal?.listPrice
   const listPrice = typeof rawListPrice === 'number' ? rawListPrice : (typeof quote.totalPrice === 'number' ? quote.totalPrice : 0)
   const requestedDiscount = (quote.inputs as { requestedDiscount?: number }).requestedDiscount ?? 0
   return {
-    roles: rolesWithRevenue,
+    roles: rolesWithDays,
     listPrice,
-    dealPrice: listPrice,
     requestedDiscount,
   }
 }
@@ -39,7 +36,6 @@ function inputsFromQuote(quote: GmQuote, gmConfig: GmConfig): Partial<GmInputs> 
 function buildInitialInputs(gmConfig: GmConfig, initialLinkedQuote?: GmQuote | null): GmInputs {
   const base: GmInputs = {
     roles: gmConfig.defaultRoles.map((r) => ({ ...r })),
-    dealPrice: 0,
     listPrice: 0,
     requestedDiscount: 0,
     targetGm: gmConfig.targetGm,
@@ -111,7 +107,6 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes,
     setInputs((prev) => ({
       ...prev,
       roles: gmConfig.defaultRoles.map((r) => ({ ...r })),
-      dealPrice: 0,
       listPrice: 0,
       requestedDiscount: 0,
     }))
@@ -119,7 +114,7 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes,
 
   // ── Save scenario ──────────────────────────────────────────────────────────
 
-  const hasData = inputs.roles.some((r) => r.days > 0) || inputs.dealPrice > 0
+  const hasData = inputs.roles.some((r) => r.days > 0) || inputs.listPrice > 0
 
   const handleSave = useCallback(async () => {
     if (!hasData) return
@@ -169,12 +164,6 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes,
     const res = await fetch(`/api/gm-scenarios?id=${id}`, { method: 'DELETE' })
     if (res.ok) setScenarios((prev) => prev.filter((s) => s.id !== id))
   }
-
-  // ─── Deal price delta display ─────────────────────────────────────────────
-
-  const dealDelta = inputs.dealPrice - inputs.listPrice
-  const hasDealPrice = inputs.dealPrice > 0
-  const hasListPrice = inputs.listPrice > 0
 
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -306,72 +295,52 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes,
             </div>
           </div>
 
-          {/* Deal Price */}
+          {/* Pricing */}
           <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Deal Price</h3>
-
-            {hasListPrice && (
-              <div className="flex items-center justify-between mb-3 px-3 py-2 rounded-md bg-gray-50 border border-gray-100">
-                <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wide">
-                  Calculator List Price
-                </span>
-                <span className="text-xs font-semibold text-gray-700">
-                  {fmtCurrency(inputs.listPrice)}
-                </span>
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Pricing</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-[10px] font-medium text-gray-400 uppercase tracking-wide mb-1">
+                  List Price ($)
+                </label>
+                {linkedQuote ? (
+                  <div className="flex items-center justify-between px-3 py-2 rounded-md bg-gray-50 border border-gray-100">
+                    <span className="text-xs font-semibold text-gray-700">
+                      {fmtCurrency(inputs.listPrice)}
+                    </span>
+                    <span className="text-[10px] text-indigo-500 font-medium">from quote</span>
+                  </div>
+                ) : (
+                  <input
+                    type="number"
+                    className={numCls}
+                    value={inputs.listPrice === 0 ? '' : inputs.listPrice}
+                    placeholder="0"
+                    min={0}
+                    step={1000}
+                    onChange={(e) =>
+                      updateInput('listPrice', e.target.value === '' ? 0 : Number(e.target.value))
+                    }
+                  />
+                )}
               </div>
-            )}
-
-            <div>
-              <label className="block text-[10px] font-medium text-gray-400 uppercase tracking-wide mb-1">
-                Agreed Deal Price ($)
-              </label>
-              <input
-                type="number"
-                className={numCls}
-                value={inputs.dealPrice === 0 ? '' : inputs.dealPrice}
-                placeholder={hasListPrice ? fmtCurrency(inputs.listPrice) : '0'}
-                min={0}
-                step={1000}
-                onChange={(e) =>
-                  updateInput('dealPrice', e.target.value === '' ? 0 : Number(e.target.value))
-                }
-              />
-              <p className="text-[10px] text-gray-400 mt-1">
-                Enter the actual price you are charging this client. Can be above or below list price.
-              </p>
-            </div>
-
-            <div className="mt-3">
-              <label className="block text-[10px] font-medium text-gray-400 uppercase tracking-wide mb-1">
-                Requested Discount ($)
-              </label>
-              <input
-                type="number"
-                className={numCls}
-                value={inputs.requestedDiscount === 0 ? '' : inputs.requestedDiscount}
-                placeholder="0"
-                min={0}
-                step={1000}
-                onChange={(e) =>
-                  updateInput('requestedDiscount', e.target.value === '' ? 0 : Number(e.target.value))
-                }
-              />
-              <p className="text-[10px] text-gray-400 mt-1">
-                Discount amount requested by the client off list price.
-              </p>
-            </div>
-
-            {hasDealPrice && hasListPrice && dealDelta !== 0 && (
-              <div className={`mt-2.5 flex items-center gap-1.5 text-xs font-semibold ${
-                dealDelta > 0 ? 'text-green-700' : 'text-amber-700'
-              }`}>
-                <span>{dealDelta > 0 ? '▲' : '▼'}</span>
-                <span>
-                  {dealDelta > 0 ? '+' : ''}{fmtCurrency(dealDelta)} {dealDelta > 0 ? 'above' : 'below'} list
-                  {' '}({((dealDelta / inputs.listPrice) * 100).toFixed(1)}%)
-                </span>
+              <div>
+                <label className="block text-[10px] font-medium text-gray-400 uppercase tracking-wide mb-1">
+                  Requested Discount ($)
+                </label>
+                <input
+                  type="number"
+                  className={numCls}
+                  value={inputs.requestedDiscount === 0 ? '' : inputs.requestedDiscount}
+                  placeholder="0"
+                  min={0}
+                  step={1000}
+                  onChange={(e) =>
+                    updateInput('requestedDiscount', e.target.value === '' ? 0 : Number(e.target.value))
+                  }
+                />
               </div>
-            )}
+            </div>
           </div>
 
           {/* Roles */}
@@ -415,7 +384,7 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes,
             </button>
             {!hasData && (
               <p className="text-[10px] text-gray-400 mt-1.5 text-center">
-                Link a quote or enter a deal price to save.
+                Link a quote or enter values to save.
               </p>
             )}
           </div>

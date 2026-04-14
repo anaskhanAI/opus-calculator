@@ -63,7 +63,7 @@ function StatCard({
 }
 
 export default function GmResultsPanel({ outputs, inputs }: Props) {
-  const hasData = outputs.totalDays > 0 || outputs.dealPrice > 0
+  const hasData = outputs.totalDays > 0 || outputs.listPrice > 0
 
   if (!hasData) {
     return (
@@ -74,8 +74,6 @@ export default function GmResultsPanel({ outputs, inputs }: Props) {
   }
 
   const sig = SIGNAL_CONFIG[outputs.signal]
-  const priceDeltaPct =
-    outputs.listPrice > 0 ? (outputs.priceDelta / outputs.listPrice) * 100 : 0
 
   return (
     <div className="space-y-3">
@@ -123,25 +121,6 @@ export default function GmResultsPanel({ outputs, inputs }: Props) {
         />
       </div>
 
-      {/* Price vs list delta */}
-      {outputs.listPrice > 0 && outputs.priceDelta !== 0 && (
-        <div className={`rounded-lg border px-4 py-2.5 flex items-center gap-3 ${
-          outputs.priceDelta > 0
-            ? 'bg-green-50 border-green-200'
-            : 'bg-amber-50 border-amber-200'
-        }`}>
-          <span className={`text-sm font-bold ${outputs.priceDelta > 0 ? 'text-green-700' : 'text-amber-700'}`}>
-            {outputs.priceDelta > 0 ? '▲' : '▼'}
-          </span>
-          <p className={`text-xs font-medium ${outputs.priceDelta > 0 ? 'text-green-800' : 'text-amber-800'}`}>
-            Deal price is{' '}
-            <strong>{fmtCurrency(Math.abs(outputs.priceDelta))}</strong>{' '}
-            ({Math.abs(priceDeltaPct).toFixed(1)}%){' '}
-            {outputs.priceDelta > 0 ? 'above' : 'below'} the calculator list price.
-          </p>
-        </div>
-      )}
-
       {/* Scenarios */}
       <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <div className="px-4 py-2.5 border-b border-gray-100">
@@ -179,23 +158,6 @@ export default function GmResultsPanel({ outputs, inputs }: Props) {
         </div>
       </div>
 
-      {/* Min price reference */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-white border border-gray-200 rounded-lg px-4 py-3">
-          <p className="text-[10px] font-medium uppercase tracking-wide text-gray-400 mb-0.5">
-            Min Price @ {inputs.targetGm}% GM
-          </p>
-          <p className="text-base font-bold text-gray-900">{fmtCurrency(outputs.minPriceAtTarget)}</p>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-lg px-4 py-3">
-          <p className="text-[10px] font-medium uppercase tracking-wide text-gray-400 mb-0.5">
-            List Revenue (per-role)
-          </p>
-          <p className="text-base font-bold text-gray-900">{fmtCurrency(outputs.totalListRevenue)}</p>
-          <p className="text-[10px] text-gray-400">Sum of per-role revenues</p>
-        </div>
-      </div>
-
       {/* Role economics table */}
       {outputs.roles.length > 0 && outputs.roles.some((r) => r.days > 0) && (
         <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
@@ -215,16 +177,13 @@ export default function GmResultsPanel({ outputs, inputs }: Props) {
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {outputs.roles
-                  .filter((r) => r.days > 0 || (r.quoteRevenue ?? 0) > 0)
+                  .filter((r) => r.days > 0)
                   .map((r) => (
                     <tr key={r.role} className="hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-2.5 text-gray-700">{r.role}</td>
                       <td className="px-3 py-2.5 text-right text-gray-600">{r.days}</td>
                       <td className="px-3 py-2.5 text-right text-gray-800 font-medium">
-                        {fmtCurrency(r.standardRevenue)}
-                        {r.quoteRevenue !== undefined && (
-                          <span className="ml-1 text-[9px] text-indigo-400">quote</span>
-                        )}
+                        {fmtCurrency(r.revenue)}
                       </td>
                       <td className="px-3 py-2.5 text-right text-gray-600">{fmtCurrency(r.cost)}</td>
                       <td className="px-4 py-2.5 text-right font-medium">
@@ -245,7 +204,7 @@ export default function GmResultsPanel({ outputs, inputs }: Props) {
                 <tr className="border-t-2 border-gray-200 bg-gray-50 font-semibold">
                   <td className="px-4 py-2.5 text-gray-700 text-[10px] uppercase">Total</td>
                   <td className="px-3 py-2.5 text-right text-gray-700">{outputs.totalDays}</td>
-                  <td className="px-3 py-2.5 text-right text-gray-800">{fmtCurrency(outputs.totalListRevenue)}</td>
+                  <td className="px-3 py-2.5 text-right text-gray-800">{fmtCurrency(outputs.totalRevenue)}</td>
                   <td className="px-3 py-2.5 text-right text-gray-700">{fmtCurrency(outputs.totalCost)}</td>
                   <td className="px-4 py-2.5 text-right">
                     <span className={outputs.actualGm >= inputs.targetGm / 100 ? 'text-green-700' : 'text-red-600'}>

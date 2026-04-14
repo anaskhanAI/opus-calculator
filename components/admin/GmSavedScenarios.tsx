@@ -56,7 +56,7 @@ export default function GmSavedScenarios({ scenarios, onLoad, onDelete }: Props)
         <table className="w-full text-xs min-w-[640px]">
           <thead>
             <tr className="border-b border-gray-100">
-              {['Date', 'Quote', 'Client', 'Deal Price', 'List Revenue', 'GM', 'Status', 'Notes', ''].map(
+              {['Date', 'Quote', 'Client', 'List Price', 'Discounted', 'GM', 'Status', 'Notes', ''].map(
                 (h) => (
                   <th key={h} className="px-3 py-2 text-left font-medium text-gray-400 whitespace-nowrap">
                     {h}
@@ -81,10 +81,10 @@ export default function GmSavedScenarios({ scenarios, onLoad, onDelete }: Props)
                     {s.clientName ?? <span className="text-gray-300">—</span>}
                   </td>
                   <td className="px-3 py-2 text-gray-600 whitespace-nowrap">
-                    {fmtCurrency(s.outputs.dealPrice)}
+                    {fmtCurrency(s.outputs.listPrice)}
                   </td>
                   <td className="px-3 py-2 text-gray-600 whitespace-nowrap">
-                    {fmtCurrency(s.outputs.totalListRevenue)}
+                    {fmtCurrency(s.outputs.discountedPrice)}
                   </td>
                   <td className="px-3 py-2 font-semibold text-gray-800 whitespace-nowrap">
                     {fmtPct(s.outputs.actualGm)}
