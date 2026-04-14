@@ -23,11 +23,19 @@ async function fetchConfigs(): Promise<{
       ? { ...DEFAULT_PRICING_CONFIG, ...(pricingResult.data.config as Partial<PricingConfig>) }
       : DEFAULT_PRICING_CONFIG
 
+    const dbGmRoles = (gmResult.data?.config as Partial<GmConfig> | undefined)?.defaultRoles
+    const mergedRoles = dbGmRoles
+      ? dbGmRoles.map((dbRole) => {
+          const defaultRole = DEFAULT_GM_CONFIG.defaultRoles.find((r) => r.role === dbRole.role)
+          return { ...dbRole, allocations: dbRole.allocations ?? defaultRole?.allocations }
+        })
+      : DEFAULT_GM_CONFIG.defaultRoles
+
     const gmConfig: GmConfig = gmResult.data
       ? {
           ...DEFAULT_GM_CONFIG,
           ...(gmResult.data.config as Partial<GmConfig>),
-          defaultRoles: (gmResult.data.config as Partial<GmConfig>).defaultRoles ?? DEFAULT_GM_CONFIG.defaultRoles,
+          defaultRoles: mergedRoles,
         }
       : DEFAULT_GM_CONFIG
 

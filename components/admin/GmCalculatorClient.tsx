@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
-import type { GmConfig, GmInputs, GmSavedScenario, DetailedInputs } from '@/lib/types'
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
+import type { GmConfig, GmInputs, GmSavedScenario } from '@/lib/types'
 import type { GmQuote } from '@/app/admin/gm/page'
-import { calculateGm, deriveGmDaysFromQuote } from '@/lib/gm-engine'
+import { calculateGm, deriveGmDaysFromQuote, deriveGmRevenueFromQuote, fmtCurrency } from '@/lib/gm-engine'
 import GmRolesTable from './GmRolesTable'
 import GmResultsPanel from './GmResultsPanel'
 import GmSavedScenarios from './GmSavedScenarios'
@@ -21,25 +21,24 @@ const numCls =
   inputCls +
   ' [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
 
-// Build GmInputs from a quote, applying allocation-based day distribution and
-// pulling the requested discount from the quote's inputs.
 function inputsFromQuote(quote: GmQuote, gmConfig: GmConfig): Partial<GmInputs> {
-  const roles = deriveGmDaysFromQuote(quote.outputs, gmConfig.defaultRoles)
-  const requestedDiscount = (quote.inputs as DetailedInputs).requestedDiscount ?? 0
+  // Both days AND revenue are derived from quote outputs using the allocation matrix
+  const rolesWithDays    = deriveGmDaysFromQuote(quote.outputs, gmConfig.defaultRoles)
+  const rolesWithRevenue = deriveGmRevenueFromQuote(quote.outputs, rolesWithDays)
+  const listPrice = typeof quote.totalPrice === 'number' ? quote.totalPrice : 0
   return {
-    roles,
-    discountType: requestedDiscount > 0 ? 'Amount' : 'Percent',
-    discountAmount: requestedDiscount > 0 ? requestedDiscount : 0,
-    discountPercent: 0,
+    roles: rolesWithRevenue,
+    listPrice,
+    dealPrice: listPrice, // admin can override from here
   }
 }
 
 function buildInitialInputs(gmConfig: GmConfig, initialLinkedQuote?: GmQuote | null): GmInputs {
   const base: GmInputs = {
     roles: gmConfig.defaultRoles.map((r) => ({ ...r })),
-    discountType: 'Percent',
-    discountPercent: 0,
-    discountAmount: 0,
+    dealPrice: 0,
+    listPrice: 0,
+    requestedDiscount: 0,
     targetGm: gmConfig.targetGm,
     reviewBand: gmConfig.reviewBand,
     approvalBand: gmConfig.approvalBand,
@@ -52,15 +51,30 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes,
   const [inputs, setInputs] = useState<GmInputs>(() =>
     buildInitialInputs(gmConfig, initialLinkedQuote)
   )
-
   const [linkedQuote, setLinkedQuote] = useState<GmQuote | null>(initialLinkedQuote ?? null)
+
+  // Track the last initialLinkedQuote id we've applied so that soft navigations
+  // (same route, different ?quoteId) update state even without a remount.
+  const appliedQuoteId = useRef<string | null>(initialLinkedQuote?.id ?? null)
+  useEffect(() => {
+    const incomingId = initialLinkedQuote?.id ?? null
+    if (incomingId !== appliedQuoteId.current) {
+      appliedQuoteId.current = incomingId
+      if (initialLinkedQuote) {
+        setLinkedQuote(initialLinkedQuote)
+        setInputs((prev) => ({ ...prev, ...inputsFromQuote(initialLinkedQuote, gmConfig) }))
+      } else {
+        setLinkedQuote(null)
+        setInputs(buildInitialInputs(gmConfig, null))
+      }
+    }
+  }, [initialLinkedQuote, gmConfig])
+
   const [showQuoteDropdown, setShowQuoteDropdown] = useState(false)
   const [quoteSearch, setQuoteSearch] = useState('')
-
   const [saveNotes, setSaveNotes] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
-
   const [scenarios, setScenarios] = useState<GmSavedScenario[]>(initialScenarios)
 
   const outputs = useMemo(() => calculateGm(inputs), [inputs])
@@ -86,25 +100,23 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes,
     setLinkedQuote(q)
     setShowQuoteDropdown(false)
     setQuoteSearch('')
-    // Auto-populate days and discount from the quote
     setInputs((prev) => ({ ...prev, ...inputsFromQuote(q, gmConfig) }))
   }
 
   function unlinkQuote() {
     setLinkedQuote(null)
-    // Reset roles to defaults (days = 0) and clear discount
     setInputs((prev) => ({
       ...prev,
       roles: gmConfig.defaultRoles.map((r) => ({ ...r })),
-      discountType: 'Percent',
-      discountPercent: 0,
-      discountAmount: 0,
+      dealPrice: 0,
+      listPrice: 0,
+      requestedDiscount: 0,
     }))
   }
 
   // ── Save scenario ──────────────────────────────────────────────────────────
 
-  const hasData = inputs.roles.some((r) => r.days > 0)
+  const hasData = inputs.roles.some((r) => r.days > 0) || inputs.dealPrice > 0
 
   const handleSave = useCallback(async () => {
     if (!hasData) return
@@ -155,6 +167,12 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes,
     if (res.ok) setScenarios((prev) => prev.filter((s) => s.id !== id))
   }
 
+  // ─── Deal price delta display ─────────────────────────────────────────────
+
+  const dealDelta = inputs.dealPrice - inputs.listPrice
+  const hasDealPrice = inputs.dealPrice > 0
+  const hasListPrice = inputs.listPrice > 0
+
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
@@ -169,7 +187,7 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes,
             <span className="text-xs font-semibold text-gray-800">{linkedQuote.quoteRef}</span>
             <span className="text-xs text-gray-500">{linkedQuote.clientName} — {linkedQuote.projectName}</span>
             <span className="text-xs px-2 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full font-medium">
-              ${linkedQuote.totalPrice?.toLocaleString()}
+              {fmtCurrency(linkedQuote.totalPrice ?? 0)} list
             </span>
             <button
               type="button"
@@ -217,7 +235,7 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes,
                       >
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-xs font-semibold text-gray-800">{q.quoteRef}</span>
-                          <span className="text-xs text-gray-500">${q.totalPrice?.toLocaleString()}</span>
+                          <span className="text-xs text-gray-500">{fmtCurrency(q.totalPrice ?? 0)}</span>
                         </div>
                         <p className="text-[11px] text-gray-400 mt-0.5">{q.clientName} — {q.projectName}</p>
                       </button>
@@ -285,58 +303,71 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes,
             </div>
           </div>
 
-          {/* Discount */}
+          {/* Deal Price */}
           <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Discount</h3>
-            {linkedQuote && (inputs.discountType === 'Amount' || inputs.discountAmount > 0) && (
-              <p className="text-[10px] text-indigo-500 mb-2">
-                Pre-filled from quote {linkedQuote.quoteRef}. Edit as needed.
-              </p>
-            )}
-            <div className="grid grid-cols-2 gap-2 mb-3">
-              {(['Percent', 'Amount'] as const).map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => updateInput('discountType', t)}
-                  className={`py-2 rounded-md text-xs font-semibold border transition-colors ${
-                    inputs.discountType === t
-                      ? 'bg-indigo-600 border-indigo-600 text-white'
-                      : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
-                  }`}
-                >
-                  {t === 'Percent' ? 'Percentage %' : 'Fixed Amount $'}
-                </button>
-              ))}
-            </div>
-            {inputs.discountType === 'Percent' ? (
-              <div>
-                <label className="block text-[10px] font-medium text-gray-400 uppercase tracking-wide mb-1">
-                  Discount (%)
-                </label>
-                <input
-                  type="number"
-                  className={numCls}
-                  value={inputs.discountPercent}
-                  min={0}
-                  max={100}
-                  step={0.1}
-                  onChange={(e) => updateInput('discountPercent', Number(e.target.value))}
-                />
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Deal Price</h3>
+
+            {hasListPrice && (
+              <div className="flex items-center justify-between mb-3 px-3 py-2 rounded-md bg-gray-50 border border-gray-100">
+                <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wide">
+                  Calculator List Price
+                </span>
+                <span className="text-xs font-semibold text-gray-700">
+                  {fmtCurrency(inputs.listPrice)}
+                </span>
               </div>
-            ) : (
-              <div>
-                <label className="block text-[10px] font-medium text-gray-400 uppercase tracking-wide mb-1">
-                  Discount ($)
-                </label>
-                <input
-                  type="number"
-                  className={numCls}
-                  value={inputs.discountAmount}
-                  min={0}
-                  step={100}
-                  onChange={(e) => updateInput('discountAmount', Number(e.target.value))}
-                />
+            )}
+
+            <div>
+              <label className="block text-[10px] font-medium text-gray-400 uppercase tracking-wide mb-1">
+                Agreed Deal Price ($)
+              </label>
+              <input
+                type="number"
+                className={numCls}
+                value={inputs.dealPrice === 0 ? '' : inputs.dealPrice}
+                placeholder={hasListPrice ? fmtCurrency(inputs.listPrice) : '0'}
+                min={0}
+                step={1000}
+                onChange={(e) =>
+                  updateInput('dealPrice', e.target.value === '' ? 0 : Number(e.target.value))
+                }
+              />
+              <p className="text-[10px] text-gray-400 mt-1">
+                Enter the actual price you are charging this client. Can be above or below list price.
+              </p>
+            </div>
+
+            <div className="mt-3">
+              <label className="block text-[10px] font-medium text-gray-400 uppercase tracking-wide mb-1">
+                Requested Discount (%)
+              </label>
+              <input
+                type="number"
+                className={numCls}
+                value={inputs.requestedDiscount === 0 ? '' : inputs.requestedDiscount}
+                placeholder="0"
+                min={0}
+                max={100}
+                step={0.1}
+                onChange={(e) =>
+                  updateInput('requestedDiscount', e.target.value === '' ? 0 : Number(e.target.value))
+                }
+              />
+              <p className="text-[10px] text-gray-400 mt-1">
+                Discount percentage requested by the client off list price.
+              </p>
+            </div>
+
+            {hasDealPrice && hasListPrice && dealDelta !== 0 && (
+              <div className={`mt-2.5 flex items-center gap-1.5 text-xs font-semibold ${
+                dealDelta > 0 ? 'text-green-700' : 'text-amber-700'
+              }`}>
+                <span>{dealDelta > 0 ? '▲' : '▼'}</span>
+                <span>
+                  {dealDelta > 0 ? '+' : ''}{fmtCurrency(dealDelta)} {dealDelta > 0 ? 'above' : 'below'} list
+                  {' '}({((dealDelta / inputs.listPrice) * 100).toFixed(1)}%)
+                </span>
               </div>
             )}
           </div>
@@ -347,7 +378,7 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes,
               <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Team &amp; Effort</h3>
               {linkedQuote && (
                 <span className="text-[10px] text-indigo-500 font-medium">
-                  Days derived from quote
+                  Derived from quote
                 </span>
               )}
             </div>
@@ -382,7 +413,7 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes,
             </button>
             {!hasData && (
               <p className="text-[10px] text-gray-400 mt-1.5 text-center">
-                Link a quote or enter days for at least one role to save.
+                Link a quote or enter a deal price to save.
               </p>
             )}
           </div>

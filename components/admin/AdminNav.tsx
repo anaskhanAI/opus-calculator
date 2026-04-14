@@ -1,12 +1,11 @@
 import Link from 'next/link'
 
-const TABS: { id: 'quotes' | 'pricing' | 'gm'; label: string; href: string }[] = [
+const TABS: { id: 'quotes' | 'pricing'; label: string; href: string }[] = [
   { id: 'quotes',  label: 'Quote Dashboard',       href: '/admin' },
   { id: 'pricing', label: 'Pricing Configuration', href: '/admin/pricing' },
-  { id: 'gm',      label: 'GM Calculator',         href: '/admin/gm' },
 ]
 
-export default function AdminNav({ active }: { active: 'quotes' | 'pricing' | 'gm' }) {
+export default function AdminNav({ active }: { active: 'quotes' | 'pricing' }) {
   return (
     <div className="flex items-center gap-1 mb-5 border-b border-gray-200">
       {TABS.map((tab) => (

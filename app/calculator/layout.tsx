@@ -45,12 +45,20 @@ async function NavBar() {
                 My Quotes
               </Link>
               {isAdmin && (
-                <Link
-                  href="/admin"
-                  className="px-3 py-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-md transition-colors"
-                >
-                  Admin
-                </Link>
+                <>
+                  <Link
+                    href="/admin"
+                    className="px-3 py-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-md transition-colors"
+                  >
+                    Admin
+                  </Link>
+                  <Link
+                    href="/admin/gm"
+                    className="px-3 py-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-md transition-colors"
+                  >
+                    GM Calculator
+                  </Link>
+                </>
               )}
             </div>
           </div>

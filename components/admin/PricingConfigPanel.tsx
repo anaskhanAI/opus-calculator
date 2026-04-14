@@ -135,8 +135,29 @@ export default function PricingConfigPanel({ initialConfig, initialGmConfig }: P
     updateGm('defaultRoles', next)
   }
 
+  function updateGmRoleAllocation(idx: number, field: keyof NonNullable<GmRole['allocations']>, pct: number) {
+    const next = gmConfig.defaultRoles.map((r, i) => {
+      if (i !== idx) return r
+      return {
+        ...r,
+        allocations: {
+          coreImpl: 0, integrations: 0, deployment: 0, training: 0, complexity: 0,
+          ...(r.allocations ?? {}),
+          [field]: pct / 100,
+        },
+      }
+    })
+    updateGm('defaultRoles', next)
+  }
+
   function addGmRole() {
-    updateGm('defaultRoles', [...gmConfig.defaultRoles, { role: '', days: 0, dailyCost: 0, standardRate: 0 }])
+    updateGm('defaultRoles', [
+      ...gmConfig.defaultRoles,
+      {
+        role: '', days: 0, dailyCost: 0, standardRate: 0,
+        allocations: { coreImpl: 0, integrations: 0, deployment: 0, training: 0, complexity: 0 },
+      },
+    ])
   }
 
   function removeGmRole(idx: number) {
@@ -730,42 +751,71 @@ export default function PricingConfigPanel({ initialConfig, initialGmConfig }: P
             </button>
           </div>
 
-          {/* ── Day allocation matrix (read-only) ───────────────────────── */}
+          {/* ── Day allocation matrix (editable) ────────────────────────── */}
           <div>
             <SubLabel>Hour-to-Day Allocation Matrix</SubLabel>
             <p className="text-[10px] text-gray-400 mb-3">
-              When a quote is linked in the GM Calculator, project hours are converted to days (÷8) and distributed
-              across roles using the percentages below.
+              When a quote is linked in the GM Calculator, project hours are converted to days (÷8) and
+              distributed across roles using these percentages. Each column should sum to 100%.
             </p>
             <div className="overflow-x-auto rounded-md border border-gray-200">
-              <table className="w-full text-xs min-w-[560px]">
+              <table className="w-full text-xs min-w-[640px]">
                 <thead>
                   <tr className="border-b border-gray-200 bg-gray-50">
-                    <th className="px-3 py-2 text-left font-medium text-gray-400">Role</th>
-                    {['Core Impl', 'Integrations', 'Deployment', 'Training', 'Complexity'].map((h) => (
-                      <th key={h} className="px-3 py-2 text-center font-medium text-gray-400">{h}</th>
+                    <th className="px-3 py-2 text-left font-medium text-gray-400 min-w-[160px]">Role</th>
+                    {(['Core Impl', 'Integrations', 'Deployment', 'Training', 'Complexity'] as const).map((h) => (
+                      <th key={h} className="px-2 py-2 text-center font-medium text-gray-400 w-24">{h} (%)</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {gmConfig.defaultRoles.map((r, idx) => {
                     const a = r.allocations
-                    const fmt = (v?: number) =>
-                      v && v > 0 ? `${Math.round(v * 100)}%` : <span className="text-gray-200">—</span>
+                    const fields: { key: keyof NonNullable<GmRole['allocations']>; label: string }[] = [
+                      { key: 'coreImpl',     label: 'Core Impl' },
+                      { key: 'integrations', label: 'Integrations' },
+                      { key: 'deployment',   label: 'Deployment' },
+                      { key: 'training',     label: 'Training' },
+                      { key: 'complexity',   label: 'Complexity' },
+                    ]
                     return (
                       <tr key={idx} className="border-b border-gray-100 last:border-0">
-                        <td className="px-3 py-2 font-medium text-gray-700">{r.role || '—'}</td>
-                        <td className="px-3 py-2 text-center text-gray-600">{fmt(a?.coreImpl)}</td>
-                        <td className="px-3 py-2 text-center text-gray-600">{fmt(a?.integrations)}</td>
-                        <td className="px-3 py-2 text-center text-gray-600">{fmt(a?.deployment)}</td>
-                        <td className="px-3 py-2 text-center text-gray-600">{fmt(a?.training)}</td>
-                        <td className="px-3 py-2 text-center text-gray-600">{fmt(a?.complexity)}</td>
+                        <td className="px-3 py-1.5 font-medium text-gray-700 text-[11px]">{r.role || <span className="text-gray-300 italic">unnamed</span>}</td>
+                        {fields.map(({ key }) => (
+                          <td key={key} className="px-2 py-1.5">
+                            <input
+                              type="number"
+                              className={numInputCls + ' text-center'}
+                              value={Math.round((a?.[key] ?? 0) * 100)}
+                              min={0}
+                              max={100}
+                              step={1}
+                              onChange={(e) => updateGmRoleAllocation(idx, key, Number(e.target.value))}
+                            />
+                          </td>
+                        ))}
                       </tr>
                     )
                   })}
                 </tbody>
+                <tfoot>
+                  <tr className="border-t-2 border-gray-200 bg-gray-50">
+                    <td className="px-3 py-1.5 text-[10px] font-medium text-gray-400 uppercase tracking-wide">Column total</td>
+                    {(['coreImpl', 'integrations', 'deployment', 'training', 'complexity'] as const).map((key) => {
+                      const total = gmConfig.defaultRoles.reduce((sum, r) => sum + Math.round((r.allocations?.[key] ?? 0) * 100), 0)
+                      return (
+                        <td key={key} className={`px-2 py-1.5 text-center font-semibold text-xs ${total === 100 ? 'text-green-700' : total === 0 ? 'text-gray-300' : 'text-amber-600'}`}>
+                          {total}%
+                        </td>
+                      )
+                    })}
+                  </tr>
+                </tfoot>
               </table>
             </div>
+            <p className="text-[10px] text-gray-400 mt-1.5">
+              Column totals shown below. Green = 100% (correct). Amber = does not sum to 100%.
+            </p>
           </div>
         </div>
       </Section>

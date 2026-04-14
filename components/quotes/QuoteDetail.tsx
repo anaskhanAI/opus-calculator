@@ -131,7 +131,7 @@ export default function QuoteDetail({ quote, isAdmin = false }: QuoteDetailProps
             </p>
             <p className="text-[10px] text-gray-400 mt-0.5">
               {typeof quote.totalWeeks === 'number'
-                ? `${quote.totalWeeks.toFixed(1)} weeks · ${quote.totalHours?.toFixed(0) ?? 0} hrs`
+                ? `${Math.round(quote.totalWeeks)} weeks · ${quote.totalHours?.toFixed(0) ?? 0} hrs`
                 : 'On Demand'}
             </p>
           </div>

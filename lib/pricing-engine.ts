@@ -168,7 +168,9 @@ function calcCoreImplementation(
       : calcSimpleCoreHours(weeks, hasIntegrations, cfg)
 
   const listPrice = hours * cfg.dayRate
-  const fte = hours / 40 / weeks
+  // Use config headcount directly — deriving from hours/40/weeks is unreliable
+  // when workingDaysPerWeek or hours-per-day differ from the 40 h/wk assumption.
+  const fte = hasIntegrations ? cfg.intHeadcount : cfg.coreHeadcount
 
   return { listPrice, weeks, hours, fte }
 }
@@ -307,10 +309,10 @@ function calcComplexityFactor(
   const hours = listPrice / cfg.dayRate
   const fte = coreFte
 
-  let weeks = 0
-  if (typeof fte === 'number' && fte > 0) {
-    weeks = hours / 40 / fte
-  }
+  // Fall back to integrationFte when coreFte is '-' (no use cases entered)
+  // to prevent weeks from collapsing to 0 on fractional-hour values.
+  const effectiveFte = typeof fte === 'number' && fte > 0 ? fte : cfg.integrationFte
+  const weeks = effectiveFte > 0 ? hours / 40 / effectiveFte : 0
 
   return { listPrice, weeks, hours, fte }
 }
@@ -422,7 +424,7 @@ export function formatHours(value: number | 'On Demand'): string {
 export function formatFte(value: number | string): string {
   if (value === '-') return '—'
   if (typeof value === 'number') {
-    return value % 1 === 0 ? value.toString() : value.toFixed(1)
+    return Math.round(value).toString()
   }
   return value
 }
