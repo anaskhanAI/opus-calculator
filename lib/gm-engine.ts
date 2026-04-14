@@ -224,9 +224,9 @@ export function calculateGm(inputs: GmInputs): GmOutputs {
     }
   })
 
-  // Discounted price = list price after requested discount
+  // Discounted price = list price minus requested discount (dollar amount)
   const discountedPrice = listPrice > 0 && requestedDiscount > 0
-    ? listPrice * (1 - requestedDiscount / 100)
+    ? listPrice - requestedDiscount
     : listPrice
 
   // Overall GM is driven by the deal price the admin controls

@@ -104,7 +104,7 @@ export default function GmResultsPanel({ outputs, inputs }: Props) {
         <StatCard
           label="Discounted Price"
           value={fmtCurrency(outputs.discountedPrice)}
-          sub={inputs.requestedDiscount > 0 ? `${inputs.requestedDiscount}% off` : undefined}
+          sub={inputs.requestedDiscount > 0 ? `${fmtCurrency(inputs.requestedDiscount)} off` : undefined}
         />
         <StatCard
           label="Total Cost"

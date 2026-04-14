@@ -155,7 +155,7 @@ export interface GmInputs {
   roles: GmRole[]
   dealPrice: number         // the actual price being charged to the client (admin-controlled)
   listPrice: number         // reference: quote.totalPrice or sum(days×standardRate) in manual mode
-  requestedDiscount: number // percentage discount requested by client (0-100)
+  requestedDiscount: number // dollar discount requested by client
   targetGm: number
   reviewBand: number
   approvalBand: number
@@ -183,7 +183,7 @@ export interface GmOutputs {
   totalListRevenue: number    // sum of per-role standardRevenue (from quote or days×rate)
   dealPrice: number           // the actual charged price (from inputs)
   listPrice: number           // reference list price (from inputs)
-  discountedPrice: number     // listPrice × (1 - requestedDiscount/100)
+  discountedPrice: number     // listPrice - requestedDiscount
   priceDelta: number          // dealPrice - listPrice
   totalCost: number
   grossProfit: number         // dealPrice - totalCost

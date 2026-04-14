@@ -26,10 +26,7 @@ function inputsFromQuote(quote: GmQuote, gmConfig: GmConfig): Partial<GmInputs> 
   const rolesWithDays    = deriveGmDaysFromQuote(quote.outputs, gmConfig.defaultRoles)
   const rolesWithRevenue = deriveGmRevenueFromQuote(quote.outputs, rolesWithDays)
   const listPrice = typeof quote.totalPrice === 'number' ? quote.totalPrice : 0
-  const quoteDiscount = (quote.inputs as { requestedDiscount?: number }).requestedDiscount ?? 0
-  const requestedDiscount = listPrice > 0 && quoteDiscount > 0
-    ? Math.round((quoteDiscount / listPrice) * 10000) / 100  // dollar → percentage, 2dp
-    : 0
+  const requestedDiscount = (quote.inputs as { requestedDiscount?: number }).requestedDiscount ?? 0
   return {
     roles: rolesWithRevenue,
     listPrice,
@@ -345,7 +342,7 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes,
 
             <div className="mt-3">
               <label className="block text-[10px] font-medium text-gray-400 uppercase tracking-wide mb-1">
-                Requested Discount (%)
+                Requested Discount ($)
               </label>
               <input
                 type="number"
@@ -353,14 +350,13 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes,
                 value={inputs.requestedDiscount === 0 ? '' : inputs.requestedDiscount}
                 placeholder="0"
                 min={0}
-                max={100}
-                step={0.1}
+                step={1000}
                 onChange={(e) =>
                   updateInput('requestedDiscount', e.target.value === '' ? 0 : Number(e.target.value))
                 }
               />
               <p className="text-[10px] text-gray-400 mt-1">
-                Discount percentage requested by the client off list price.
+                Discount amount requested by the client off list price.
               </p>
             </div>
 
