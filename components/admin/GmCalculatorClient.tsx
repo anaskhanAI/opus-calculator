@@ -26,10 +26,15 @@ function inputsFromQuote(quote: GmQuote, gmConfig: GmConfig): Partial<GmInputs> 
   const rolesWithDays    = deriveGmDaysFromQuote(quote.outputs, gmConfig.defaultRoles)
   const rolesWithRevenue = deriveGmRevenueFromQuote(quote.outputs, rolesWithDays)
   const listPrice = typeof quote.totalPrice === 'number' ? quote.totalPrice : 0
+  const quoteDiscount = (quote.inputs as { requestedDiscount?: number }).requestedDiscount ?? 0
+  const requestedDiscount = listPrice > 0 && quoteDiscount > 0
+    ? Math.round((quoteDiscount / listPrice) * 10000) / 100  // dollar → percentage, 2dp
+    : 0
   return {
     roles: rolesWithRevenue,
     listPrice,
-    dealPrice: listPrice, // admin can override from here
+    dealPrice: listPrice,
+    requestedDiscount,
   }
 }
 
