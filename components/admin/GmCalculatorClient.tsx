@@ -25,7 +25,8 @@ function inputsFromQuote(quote: GmQuote, gmConfig: GmConfig): Partial<GmInputs> 
   // Both days AND revenue are derived from quote outputs using the allocation matrix
   const rolesWithDays    = deriveGmDaysFromQuote(quote.outputs, gmConfig.defaultRoles)
   const rolesWithRevenue = deriveGmRevenueFromQuote(quote.outputs, rolesWithDays)
-  const listPrice = typeof quote.totalPrice === 'number' ? quote.totalPrice : 0
+  const rawListPrice = quote.outputs?.projectTotal?.listPrice
+  const listPrice = typeof rawListPrice === 'number' ? rawListPrice : (typeof quote.totalPrice === 'number' ? quote.totalPrice : 0)
   const requestedDiscount = (quote.inputs as { requestedDiscount?: number }).requestedDiscount ?? 0
   return {
     roles: rolesWithRevenue,
