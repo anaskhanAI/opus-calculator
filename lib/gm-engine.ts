@@ -185,7 +185,6 @@ export function calculateGm(inputs: GmInputs): GmOutputs {
 
   const signal = gmSignal(actualGm, targetGm, reviewBand, approvalBand)
 
-  const tgt = targetGm / 100
   const buildScenarioGm = (price: number): number =>
     price === 0 ? 0 : (price - totalCost) / price
 
