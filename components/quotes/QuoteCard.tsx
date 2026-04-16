@@ -35,7 +35,7 @@ export default function QuoteCard({ quote, onRedownload }: QuoteCardProps) {
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4 hover:border-gray-300 hover:shadow-sm transition-all">
+    <div className="border border-gray-200 bg-white p-4 hover:border-gray-300 hover:shadow-sm transition-all">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap mb-1">

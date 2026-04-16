@@ -35,14 +35,14 @@ export default function QuotesTable({ quotes }: QuotesTableProps) {
 
   if (quotes.length === 0) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white px-6 py-12 text-center">
+      <div className="border border-gray-200 bg-white px-6 py-12 text-center">
         <p className="text-sm text-gray-400">No quotes match the current filters.</p>
       </div>
     )
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+    <div className="border border-gray-200 bg-white overflow-hidden">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-gray-100 bg-gray-50/80 text-left">

@@ -81,7 +81,7 @@ export default function PricingGuideUpload() {
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden mb-4">
+    <div className="bg-white border border-gray-200 overflow-hidden mb-4">
       {/* Header row — always visible, click to expand */}
       <button
         type="button"

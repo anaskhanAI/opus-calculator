@@ -24,7 +24,7 @@ export default function QuoteFiltersBar({ filters, onChange, onReset }: QuoteFil
     filters.maxPrice !== undefined
 
   return (
-    <div className="flex items-end gap-2 flex-wrap rounded-lg border border-gray-200 bg-white px-3 py-2.5">
+    <div className="flex items-end gap-2 flex-wrap border border-gray-200 bg-white px-3 py-2.5">
       <div className="flex-1 min-w-[140px]">
         <label className="block text-[10px] font-medium text-gray-400 uppercase tracking-wide mb-1">Seller</label>
         <input

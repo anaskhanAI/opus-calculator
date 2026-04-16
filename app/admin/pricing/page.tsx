@@ -66,10 +66,13 @@ export default async function AdminPricingPage() {
       <div className="mb-3">
         <Link
           href="/calculator"
-          className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 mb-2 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-800 mb-2 transition-colors"
         >
-          ← Back to Calculator
-        </Link>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Calculator
+          </Link>
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-lg font-bold text-gray-900">Pricing Configuration</h1>

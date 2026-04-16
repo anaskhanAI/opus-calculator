@@ -47,7 +47,7 @@ export const DEFAULT_GM_CONFIG: GmConfig = {
     {
       role: 'Project Manager',
       days: 0, dailyCost: 350, standardRate: 1000,
-      allocations: { coreImpl: 0.333, integrations: 0.25,  deployment: 0.25, training: 0.25,  complexity: 0.333 },
+      allocations: { coreImpl: 0.334, integrations: 0.25,  deployment: 0.25, training: 0.25,  complexity: 0.334 },
     },
     {
       role: 'Cloud Ops Engineer',

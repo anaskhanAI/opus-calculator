@@ -45,7 +45,7 @@ export default function GmSavedScenarios({ scenarios, onLoad, onDelete }: Props)
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+    <div className="bg-white border border-gray-200 overflow-hidden">
       <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
         <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
           Saved Scenarios ({scenarios.length})

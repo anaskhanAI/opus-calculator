@@ -25,7 +25,7 @@ export default function SummaryPanel({ outputs, discount = 0, showDetail = false
       : engineTotal
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+    <div className="border border-gray-200 bg-white overflow-hidden">
       <div className="border-b border-gray-100 px-4 py-3">
         <h2 className="text-xs font-semibold text-gray-800 uppercase tracking-wider">Summary</h2>
       </div>

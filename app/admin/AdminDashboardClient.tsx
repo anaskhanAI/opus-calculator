@@ -71,17 +71,17 @@ export default function AdminDashboardClient({ initialQuotes }: AdminDashboardCl
       {/* Stats strip + Export */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-gray-200">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200">
             <span className="text-lg font-bold text-gray-900">{initialQuotes.length}</span>
             <span className="text-xs text-gray-500">total quotes</span>
           </div>
           {isFiltered && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 border border-indigo-100">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 border border-indigo-100">
               <span className="text-lg font-bold text-indigo-700">{filtered.length}</span>
               <span className="text-xs text-indigo-500">filtered</span>
             </div>
           )}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-gray-200">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200">
             <span className="text-lg font-bold text-gray-900">{formatPrice(totalRevenue)}</span>
             <span className="text-xs text-gray-500">{isFiltered ? 'filtered value' : 'total value'}</span>
           </div>
@@ -91,7 +91,7 @@ export default function AdminDashboardClient({ initialQuotes }: AdminDashboardCl
             type="button"
             onClick={handleRefresh}
             disabled={refreshing}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 bg-white text-xs font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-colors"
           >
             <svg
               className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`}

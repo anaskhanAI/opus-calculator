@@ -80,7 +80,7 @@ function Section({
 }) {
   const [open, setOpen] = useState(defaultOpen)
   return (
-    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+    <div className="bg-white border border-gray-200 overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -510,7 +510,7 @@ export default function PricingConfigPanel({ initialConfig, initialGmConfig }: P
               </button>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-xs border border-gray-200 rounded-lg overflow-hidden">
+              <table className="w-full text-xs border border-gray-200 overflow-hidden">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-3 py-2 text-left text-gray-400 font-medium border-b border-gray-200">
@@ -591,7 +591,7 @@ export default function PricingConfigPanel({ initialConfig, initialGmConfig }: P
               </button>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-xs border border-gray-200 rounded-lg overflow-hidden">
+              <table className="w-full text-xs border border-gray-200 overflow-hidden">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-3 py-2 text-left text-gray-400 font-medium border-b border-gray-200">

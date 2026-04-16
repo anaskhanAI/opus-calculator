@@ -45,9 +45,12 @@ export default async function QuotesPage() {
         <div>
           <Link
             href="/calculator"
-            className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 mb-2 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-800 mb-2 transition-colors"
           >
-            ← Back to Calculator
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Calculator
           </Link>
           <h1 className="text-lg font-bold text-gray-900">My Quotes</h1>
           <p className="text-xs text-gray-500 mt-0.5">
@@ -57,7 +60,7 @@ export default async function QuotesPage() {
       </div>
 
       {quotes.length === 0 ? (
-        <div className="rounded-xl border border-gray-200 bg-white px-6 py-16 text-center">
+        <div className="border border-gray-200 bg-white px-6 py-16 text-center">
           <p className="text-sm text-gray-500">No quotes yet. Head to the calculator to generate your first quote.</p>
         </div>
       ) : (

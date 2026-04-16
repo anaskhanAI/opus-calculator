@@ -71,7 +71,7 @@ export default function ResetPasswordPage() {
           <p className="text-sm text-gray-500">Set a new password</p>
         </div>
 
-        <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
+        <div className="border border-gray-200 bg-white p-8 shadow-sm">
           {success ? (
             <div className="text-center py-4">
               <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-100 mb-4">

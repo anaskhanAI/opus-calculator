@@ -54,7 +54,7 @@ function StatCard({
   highlight?: boolean
 }) {
   return (
-    <div className={`rounded-lg border p-3 ${highlight ? 'border-indigo-200 bg-indigo-50' : 'border-gray-200 bg-white'}`}>
+    <div className={`border p-3 ${highlight ? 'border-indigo-200 bg-indigo-50' : 'border-gray-200 bg-white'}`}>
       <p className="text-[10px] font-medium uppercase tracking-wide text-gray-400 mb-0.5">{label}</p>
       <p className={`text-lg font-bold leading-tight ${highlight ? 'text-indigo-700' : 'text-gray-900'}`}>{value}</p>
       {sub && <p className="text-[10px] text-gray-400 mt-0.5">{sub}</p>}
@@ -67,7 +67,7 @@ export default function GmResultsPanel({ outputs, inputs }: Props) {
 
   if (!hasData) {
     return (
-      <div className="bg-white border border-gray-200 rounded-lg flex items-center justify-center min-h-[240px]">
+      <div className="bg-white border border-gray-200 flex items-center justify-center min-h-[240px]">
         <p className="text-sm text-gray-400">Link a quote or enter values to see the GM analysis.</p>
       </div>
     )
@@ -79,7 +79,7 @@ export default function GmResultsPanel({ outputs, inputs }: Props) {
     <div className="space-y-3">
 
       {/* Signal banner */}
-      <div className={`flex items-start gap-3 rounded-lg border px-4 py-3 ${sig.bg} ${sig.border}`}>
+      <div className={`flex items-start gap-3 border px-4 py-3 ${sig.bg} ${sig.border}`}>
         <span className={`mt-0.5 inline-block h-2.5 w-2.5 flex-shrink-0 rounded-full ${sig.dot}`} />
         <div className="flex-1">
           <p className={`text-sm font-semibold ${sig.text}`}>{sig.label}</p>
@@ -122,7 +122,7 @@ export default function GmResultsPanel({ outputs, inputs }: Props) {
       </div>
 
       {/* Scenarios */}
-      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <div className="bg-white border border-gray-200 overflow-hidden">
         <div className="px-4 py-2.5 border-b border-gray-100">
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Pricing Scenarios</h3>
         </div>
@@ -160,7 +160,7 @@ export default function GmResultsPanel({ outputs, inputs }: Props) {
 
       {/* Role economics table */}
       {outputs.roles.length > 0 && outputs.roles.some((r) => r.days > 0) && (
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div className="bg-white border border-gray-200 overflow-hidden">
           <div className="px-4 py-2.5 border-b border-gray-100">
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Role Economics</h3>
           </div>

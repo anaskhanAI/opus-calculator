@@ -171,7 +171,7 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes,
     <div className="space-y-4">
 
       {/* ── Quote link bar ──────────────────────────────────────────────── */}
-      <div className="bg-white border border-gray-200 rounded-lg px-4 py-3 flex items-center gap-3 flex-wrap">
+      <div className="bg-white border border-gray-200 px-4 py-3 flex items-center gap-3 flex-wrap">
         <span className="text-xs font-medium text-gray-500">Linked quote:</span>
 
         {linkedQuote ? (
@@ -203,7 +203,7 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes,
             </button>
 
             {showQuoteDropdown && (
-              <div className="absolute left-0 top-7 z-20 bg-white border border-gray-200 rounded-lg shadow-lg w-80">
+              <div className="absolute left-0 top-7 z-20 bg-white border border-gray-200 shadow-lg w-80">
                 <div className="p-2 border-b border-gray-100">
                   <input
                     type="text"
@@ -247,7 +247,7 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes,
         <div className="space-y-3">
 
           {/* Guardrails */}
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <div className="bg-white border border-gray-200 p-4">
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Commercial Guardrails</h3>
             <div className="space-y-3">
               <div>
@@ -296,7 +296,7 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes,
           </div>
 
           {/* Pricing */}
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <div className="bg-white border border-gray-200 p-4">
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Pricing</h3>
             <div className="space-y-3">
               <div>
@@ -344,7 +344,7 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes,
           </div>
 
           {/* Roles */}
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <div className="bg-white border border-gray-200 p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Team &amp; Effort</h3>
               {linkedQuote && (
@@ -360,7 +360,7 @@ export default function GmCalculatorClient({ gmConfig, initialScenarios, quotes,
           </div>
 
           {/* Save */}
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <div className="bg-white border border-gray-200 p-4">
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Save Scenario</h3>
             <textarea
               rows={2}

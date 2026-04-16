@@ -158,15 +158,15 @@ export default function LoginPage() {
           <p className="text-sm text-gray-500">Solutions Delivery Pricing Calculator</p>
         </div>
 
-        <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
+        <div className="border border-gray-200 bg-white p-8 shadow-sm">
 
           {/* ── Tab switcher (login / signup) ──────────────────────────── */}
           {(view === 'login' || view === 'signup') && (
-            <div className="flex rounded-lg bg-gray-100 p-1 mb-6">
+            <div className="flex bg-gray-100 p-1 mb-6">
               <button
                 type="button"
                 onClick={() => switchView('login')}
-                className={`flex-1 rounded-md py-1.5 text-sm font-medium transition-colors ${
+                className={`flex-1 py-1.5 text-sm font-medium transition-colors ${
                   view === 'login'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
@@ -177,7 +177,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => switchView('signup')}
-                className={`flex-1 rounded-md py-1.5 text-sm font-medium transition-colors ${
+                className={`flex-1 py-1.5 text-sm font-medium transition-colors ${
                   view === 'signup'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
@@ -294,9 +294,12 @@ export default function LoginPage() {
             <>
               <button
                 onClick={() => switchView('login')}
-                className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-800 mb-4 transition-colors"
               >
-                ← Back to sign in
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Sign in
               </button>
               <h2 className="text-lg font-semibold text-gray-900 mb-1">Reset your password</h2>
               <p className="text-sm text-gray-500 mb-6">

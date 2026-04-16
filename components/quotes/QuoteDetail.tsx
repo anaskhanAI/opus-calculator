@@ -112,7 +112,7 @@ export default function QuoteDetail({ quote, isAdmin = false }: QuoteDetailProps
   return (
     <div className="space-y-4">
       {/* Header card */}
-      <div className="rounded-xl border border-gray-200 bg-white p-4">
+      <div className="border border-gray-200 bg-white p-4">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
@@ -167,7 +167,7 @@ export default function QuoteDetail({ quote, isAdmin = false }: QuoteDetailProps
       </div>
 
       {/* Inputs card */}
-      <div className="rounded-xl border border-gray-200 bg-white p-4">
+      <div className="border border-gray-200 bg-white p-4">
         <h2 className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-3">
           Calculator Inputs
         </h2>
