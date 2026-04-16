@@ -176,7 +176,6 @@ export interface GmScenario {
 
 export interface GmOutputs {
   totalDays: number
-  totalRevenue: number        // sum of per-role revenue (days × standardRate)
   listPrice: number           // pre-discount list price
   discountedPrice: number     // listPrice - requestedDiscount
   totalCost: number

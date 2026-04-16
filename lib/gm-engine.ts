@@ -157,27 +157,26 @@ export function calculateGm(inputs: GmInputs): GmOutputs {
 
   const totalDays = roles.reduce((a, r) => a + r.days, 0)
 
-  // Per-role economics: revenue is always days × standardRate
-  let totalRevenue = 0
+  // Compute prices first — role revenue depends on discountedPrice
+  const fallbackRevenue = roles.reduce((a, r) => a + r.days * r.standardRate, 0)
+  const effectiveListPrice = listPrice > 0 ? listPrice : fallbackRevenue
+  const discountedPrice = requestedDiscount > 0
+    ? effectiveListPrice - requestedDiscount
+    : effectiveListPrice
+
+  // Per-role economics: revenue = effort share × discountedPrice
   let totalCost = 0
 
   const roleResults: GmRoleResult[] = roles.map((r) => {
-    const revenue = r.days * r.standardRate
-    const cost = r.days * r.dailyCost
     const effortPct = totalDays === 0 ? 0 : r.days / totalDays
+    const revenue = effortPct * discountedPrice
+    const cost = r.days * r.dailyCost
     const gmPct = revenue === 0 ? 0 : (revenue - cost) / revenue
 
-    totalRevenue += revenue
     totalCost += cost
 
     return { ...r, revenue, effortPct, cost, gmPct }
   })
-
-  // Discounted price = list price minus requested discount
-  const effectiveListPrice = listPrice > 0 ? listPrice : totalRevenue
-  const discountedPrice = requestedDiscount > 0
-    ? effectiveListPrice - requestedDiscount
-    : effectiveListPrice
 
   // GM is driven by the discounted price (what the client actually pays)
   const actualGm = discountedPrice === 0 ? 0 : (discountedPrice - totalCost) / discountedPrice
@@ -211,7 +210,6 @@ export function calculateGm(inputs: GmInputs): GmOutputs {
 
   return {
     totalDays,
-    totalRevenue,
     listPrice: effectiveListPrice,
     discountedPrice,
     totalCost,
