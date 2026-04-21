@@ -133,18 +133,12 @@ function calcDeliveryWeeks(
 }
 
 // ─── I6: CORE HOURS (DETAILED) ───────────────────────────────────────────────
-function calcDetailedCoreHours(weeks: number, hasIntegrations: boolean, cfg: PricingConfig): number {
-  if (hasIntegrations) {
-    return weeks * cfg.intHeadcount * cfg.workingDaysPerWeek * 8
-  }
-  return weeks * cfg.coreHeadcount * 40
+function calcDetailedCoreHours(weeks: number, cfg: PricingConfig): number {
+  return weeks * cfg.coreHeadcount * cfg.workingDaysPerWeek * 8
 }
 
 // ─── I25: CORE HOURS (SIMPLE) ────────────────────────────────────────────────
-function calcSimpleCoreHours(weeks: number, hasIntegrations: boolean, cfg: PricingConfig): number {
-  if (hasIntegrations) {
-    return weeks * cfg.intHeadcount * 40
-  }
+function calcSimpleCoreHours(weeks: number, cfg: PricingConfig): number {
   return weeks * cfg.coreHeadcount * 40
 }
 
@@ -152,7 +146,6 @@ function calcSimpleCoreHours(weeks: number, hasIntegrations: boolean, cfg: Prici
 function calcCoreImplementation(
   tier1: number,
   tier2: number,
-  hasIntegrations: boolean,
   mode: 'detailed' | 'simple',
   cfg: PricingConfig
 ): LineItem {
@@ -164,13 +157,11 @@ function calcCoreImplementation(
 
   const hours =
     mode === 'detailed'
-      ? calcDetailedCoreHours(weeks, hasIntegrations, cfg)
-      : calcSimpleCoreHours(weeks, hasIntegrations, cfg)
+      ? calcDetailedCoreHours(weeks, cfg)
+      : calcSimpleCoreHours(weeks, cfg)
 
   const listPrice = hours * cfg.dayRate
-  // Use config headcount directly — deriving from hours/40/weeks is unreliable
-  // when workingDaysPerWeek or hours-per-day differ from the 40 h/wk assumption.
-  const fte = hasIntegrations ? cfg.intHeadcount : cfg.coreHeadcount
+  const fte = cfg.coreHeadcount
 
   return { listPrice, weeks, hours, fte }
 }
@@ -354,10 +345,7 @@ export function calculateDetailed(
 ): CalculatorOutputs {
   const cfg = resolvePricingConfig(config)
 
-  const integrationWeeks = calcDetailedIntegrationWeeks(inputs.integrations, cfg)
-  const hasIntegrations = integrationWeeks > 0
-
-  const core = calcCoreImplementation(inputs.tier1UseCases, inputs.tier2UseCases, hasIntegrations, 'detailed', cfg)
+  const core = calcCoreImplementation(inputs.tier1UseCases, inputs.tier2UseCases, 'detailed', cfg)
   const integrations = calcDetailedIntegrations(inputs.integrations, cfg)
   const deployment = calcDeployment(inputs.deployment, cfg)
   const training = calcTraining(inputs.training, cfg)
@@ -381,14 +369,7 @@ export function calculateSimple(
 ): CalculatorOutputs {
   const cfg = resolvePricingConfig(config)
 
-  const integrationWeeks = calcSimpleIntegrationWeeks(
-    inputs.standardApiIntegrations,
-    inputs.customIntegrations,
-    cfg
-  )
-  const hasIntegrations = integrationWeeks > 0
-
-  const core = calcCoreImplementation(inputs.tier1UseCases, inputs.tier2UseCases, hasIntegrations, 'simple', cfg)
+  const core = calcCoreImplementation(inputs.tier1UseCases, inputs.tier2UseCases, 'simple', cfg)
   const integrations = calcSimpleIntegrations(inputs.standardApiIntegrations, inputs.customIntegrations, cfg)
   const deployment = calcDeployment(inputs.deployment, cfg)
   const training = calcTraining(inputs.training, cfg)
